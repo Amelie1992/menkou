@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>微信应用</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/AdminLTE.min.css">
+    <link rel="stylesheet" href="../../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+    <link rel="stylesheet" href="../../css/bootstrap-table.min.css">
+    <link rel="stylesheet" href="../../plugins/bootstrap-validator/css/bootstrap-validator.min.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../plugins/treegrid/jquery.treegrid.css">
+    <link rel="stylesheet" href="../../plugins/jqfileupload/css/jquery.fileupload.css">
+    <link rel="stylesheet" href="../../plugins/datetimepicker/css/bootstrap-datetimepicker.min.css">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+
+</head>
+<body>
+<div id="rrapp" v-cloak class="content-wrapper wzl-content-wrapper">
+    <section class="content-header">
+        <h1>
+            微信应用 &nbsp;<small v-if="title!=''">{{title}}</small>
+            <!-- 微信菜单返回-->
+            <input v-if="showList=='menu'" style="float: right" type="button" class="btn btn-warning" @click="reload"
+                   value="返回"/>
+            <!-- 微信用户返回-->
+            <input v-if="showList=='user'" style="float: right" type="button" class="btn btn-warning" @click="reload"
+                   value="返回"/>
+            <!-- 微信用户返回-->
+            <input v-if="showList=='reply'" style="float: right" type="button" class="btn btn-warning" @click="reload"
+                   value="返回"/>
+        </h1>
+    </section>
+    <div v-show="showList=='list'">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <div class="box-header with-border">
+                            <div class="col-xs-2">
+                                <input type="text" class="form-control" v-model="params.name" placeholder="公众号名称"/>
+                            </div>
+                            <button class="btn btn-primary" @click="query"><i class="fa fa-search"></i>&nbsp;查询</button>
+                            <button v-if="hasPermission('wechat:wxapp:save')" class="btn btn-primary" @click="add">
+                                <i class="fa fa-plus"></i>&nbsp;新增
+                            </button>
+                            <button v-if="hasPermission('wechat:wxapp:update')" class="btn btn-warning" @click="update">
+                                <i class="fa fa-paint-brush"></i>&nbsp;修改
+                            </button>
+                            <button v-if="hasPermission('wechat:wxapp:enabled')" class="btn btn-secondary"
+                                    @click="enabled">
+                                <i class="fa fa-ban"></i>&nbsp;使用状态 暂停/启用
+                            </button>
+                            <button v-if="hasPermission('wechat:wxapp:qualified')" class="btn btn-success"
+                                    @click="qualified">
+                                <i class="fa fa-toggle-on"></i>&nbsp;资质 开启/关闭
+                            </button>
+                            <button v-if="hasPermission('wechat:wxapp:delete')" class="btn btn-danger" @click="del">
+                                <i class="fa fa-trash-o"></i>&nbsp;删除
+                            </button>
+                        </div>
+                        <div class="box-body">
+                            <div class="table-responsive">
+                                <table id="table"></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 新增 和 编辑-->
+    <div v-show="showList=='update'">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <form class="form-horizontal">
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">公众号头像<span class="text-danger">*</span></div>
+                                    <div class="col-sm-8">
+                                        <span class="btn btn-success fileinput-button">
+										        <i class="glyphicon glyphicon-plus"></i>
+										        <span>选择图片...</span>
+										        <input id="fileupload" type="file" name="file" multiple>
+										    </span>
+                                        建议375*375px;150kb以内,格式为gif、jpeg、jpg、png的正方形图片
+                                        <br>
+                                        <br>
+                                        <div id="files" class="row">
+                                            <div class="col-sm-3 img-wrap" v-if="wxApp.headLogo != ''">
+                                                <img alt="" width="200px" :src="wxApp.headLogo">
+                                                <input name="headLogo" type="hidden" :value="wxApp.headLogo"/>
+                                                <img alt="" src="../../images/remove.png" class="img-remove"
+                                                     onclick="removePic(this)">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">公众号名称</div>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="name" class="form-control" v-model="wxApp.name"
+                                               placeholder="微信号名称"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">有效期</div>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="expDate" id="expDate" class="form-control"
+                                               v-model="wxApp.expDate" placeholder="有效期" readonly/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">微信原始标识</div>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="weixinSign" class="form-control"
+                                               v-model="wxApp.weixinSign" placeholder="微信原始标识"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">AppID</div>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="id" class="form-control" v-model="wxApp.id"
+                                               placeholder="AppID"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">应用密钥</div>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="secret" class="form-control" v-model="wxApp.secret"
+                                               placeholder="应用密钥"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">URL</div>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="url" class="form-control"
+                                               value="https://mk.momentinlet.com/portal/{appId}" placeholder=""/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">token</div>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="token" class="form-control" v-model="wxApp.token"
+                                               placeholder="token"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">EncodingAESKey</div>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="aesKey" class="form-control" v-model="wxApp.aesKey"
+                                               placeholder="EncodingAESKey"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">主体名称</div>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="principalName" class="form-control"
+                                               v-model="wxApp.principalName" placeholder="主体名称"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">备注信息</div>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="remarks" class="form-control" v-model="wxApp.remarks"
+                                               placeholder="备注信息"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!--上传校验文件-->
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">校验文件<span class="text-danger">*</span></div>
+                                    <div class="col-sm-8">
+                                        <span class="btn btn-success fileinput-button">
+										        <i class="glyphicon glyphicon-plus"></i>
+										        <span>选择文件...</span>
+										        <input id="checkfileupload" type="file" name="file" multiple>
+										    </span>
+                                        建议2M以内
+                                        <br>
+                                        <br>
+                                        <div id="checkFile" class="row">
+                                            <div v-for="(item, index) in checkFile">
+                                                <div class="col-sm-3 img-wrap" v-if="checkFile[index].picUrl != ''">
+                                                    <img alt="" width="200px" :src="checkFile[index].picUrl">
+                                                    <input name="picUrl" type="hidden" :value="checkFile[index].picUrl"/>
+                                                    <img alt="" src="../../images/remove.png" class="img-remove"
+                                                         onclick="removeCheckFile(this)">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label"></div>
+                                    <input type="button" class="btn btn-primary" @click="validate" value="确定"/>
+                                    &nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload"
+                                                       value="返回"/>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!-- 门店资质编辑-->
+    <div v-show="showList=='qualified'">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <form class="form-horizontal">
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">门店资质</div>
+                                    <div class="col-sm-8">
+                                        <script id="container" name="content" type="text/plain">
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label"></div>
+                                    <input type="button" class="btn btn-primary" @click="updateQualified" value="确定"/>
+                                    &nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload"
+                                                       value="返回"/>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 门店菜单-->
+    <div v-show="showList=='menu'">
+        <div class="public-account-management clearfix">
+            <!--左边配置菜单-->
+            <div class="left">
+                <div class="weixin-hd">
+                    <div class="weixin-title">
+                        {{menuName}}
+                    </div>
+                </div>
+                <div class="weixin-menu menu clearfix">
+                    <div class="menu_bottom" v-for="(item, i) of menu.button" :key="i">
+                        <!-- 一级菜单 -->
+                        <div @click="menuFun(i,item)" class="menu_item" :class="{'active': isActive == i}">
+                            {{item.name}}
+                        </div>
+                        <!--以下为二级菜单-->
+                        <div class="submenu" v-if="isSubMenuFlag == i">
+                            <div class="subtitle" v-if="item.sub_button" v-for="(subItem, k) in item.sub_button"
+                                 :key="k">
+                                <div class="menu_subItem" :class="{'active': isSubMenuActive == i + '' +k}"
+                                     @click="subMenuFun(subItem, i, k)">{{subItem.name}}
+                                </div>
+                            </div>
+                            <!--  二级菜单加号， 当长度 小于  5 才显示二级菜单的加号  -->
+                            <div class="menu_bottom menu_addicon" v-if="!item.sub_button || item.sub_button.length < 5"
+                                 @click="addSubMenu(i,item)"><i class="el-icon-plus"></i></div>
+                        </div>
+                    </div>
+                    <!-- 一级菜单加号 -->
+                    <div class="menu_bottom menu_addicon" v-if="menuKeyLength < 3" @click="addMenu"><i
+                            class="el-icon-plus"></i></div>
+                </div>
+                <el-button class="save_btn" type="success" @click="saveFun">保存并发布至菜单</el-button>
+            </div>
+
+            <!--右边配置-->
+            <div v-if="showRightFlag" class="right">
+                <div class="configure_page">
+                    <div class="delete_btn">
+                        <el-button size="mini" type="danger" icon="el-icon-delete" @click="deleteMenu(tempObj)">删除当前菜单
+                        </el-button>
+                    </div>
+                    <div>
+                        <span>菜单名称：</span>
+                        <el-input class="input_width" v-model="tempObj.name" placeholder="请输入菜单名称"
+                                  :maxlength=nameMaxlength clearable></el-input>
+                    </div>
+                    <div v-if="showConfigurContent">
+                        <div class="menu_content">
+                            <span>菜单内容：</span>
+                            <el-select v-model="tempObj.type" clearable placeholder="请选择" class="menu_option">
+                                <el-option v-for="item in menuOptions" :label="item.label" :value="item.value"
+                                           :key="item.value"></el-option>
+                            </el-select>
+                        </div>
+                        <!-- 跳转网页-->
+                        <div class="configur_content" v-if="tempObj.type == 'view'">
+                            <span>跳转链接：</span>
+                            <el-input class="input_width" v-model="tempObj.url" placeholder="请输入链接"
+                                      clearable></el-input>
+                        </div>
+                        <!--跳转小程序-->
+                        <div class="configur_content" v-if="tempObj.type == 'miniprogram'">
+                            <div class="applet">
+                                <span>小程序的appid：</span>
+                                <el-input class="input_width" v-model="tempObj.appid" placeholder="请输入小程序的appid"
+                                          clearable></el-input>
+                            </div>
+                            <div class="applet">
+                                <span>小程序的页面路径：</span>
+                                <el-input class="input_width" v-model="tempObj.pagepath"
+                                          placeholder="请输入小程序的页面路径，如：pages/index" clearable></el-input>
+                            </div>
+                            <div class="applet">
+                                <span>备用网页：</span>
+                                <el-input class="input_width" v-model="tempObj.url" placeholder="不支持小程序的老版本客户端将打开本网页"
+                                          clearable></el-input>
+                            </div>
+                            <p class="blue">tips:需要和公众号进行关联才可以把小程序绑定带微信菜单上哟！</p>
+                        </div>
+                        <!-- 图文消息 -->
+                        <div class="configur_content" v-if="tempObj.type == 'view_limited'">
+                            <el-row>
+                                <div class="select-item" v-if="tempObj && tempObj.content && tempObj.content.articles">
+                                    <template>
+                                        <div class="news-home">
+                                            <div v-for="(news, index) in tempObj.content.articles" :key="index"
+                                                 class="news-div">
+                                                <a target="_blank" :href="news.url" v-if="index==0">
+                                                    <div class="news-main">
+                                                        <div class="news-content">
+                                                            <img class="material-img" :src="news.thumbUrl" width="280px"
+                                                                 height="120px"/>
+                                                            <div class="news-content-title">
+                                                                <span>{{news.title}}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                                <a target="_blank" :href="news.url" v-if="index>0">
+                                                    <div class="news-main-item">
+                                                        <div class="news-content-item">
+                                                            <div class="news-content-item-title">{{news.title}}</div>
+                                                            <div class="news-content-item-img">
+                                                                <img class="material-img" :src="news.thumbUrl"
+                                                                     height="100%"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <el-row class="ope-row">
+                                        <el-button type="danger" icon="el-icon-delete" circle
+                                                   @click="deleteTempObj"></el-button>
+                                    </el-row>
+                                </div>
+                                <div v-if="!tempObj.content">
+                                    <el-row>
+                                        <el-col :span="24" style="text-align: center">
+                                            <el-button type="success" @click="openMaterial">素材库选择<i
+                                                    class="el-icon-circle-check el-icon--right"></i></el-button>
+                                        </el-col>
+                                    </el-row>
+                                </div>
+                                <el-dialog title="选择图文" :visible.sync="dialogNewsVisible" width="90%">
+                                    <!--<WxMaterialSelect :appId="appId" :objData="{repType:'news'}" @selectMaterial="selectMaterial"></WxMaterialSelect>-->
+                                </el-dialog>
+                            </el-row>
+                        </div>
+                        <div class="configur_content"
+                             v-if="tempObj.type == 'click' || tempObj.type == 'scancode_waitmsg'">
+                            <!--<WxReplySelect :appId="appId" :objData="tempObj" v-if="hackResetWxReplySelect"></WxReplySelect>-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group">
+                <div class="col-sm-2 control-label"></div>
+                &nbsp;&nbsp;
+            </div>
+        </div>
+    </div>
+
+    <!-- 微信用户-->
+    <div v-show="showList=='user'">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <div class="box-header with-border">
+                            <div class="col-xs-2">
+                                <input type="text" class="form-control" v-model="params.nickName" placeholder="昵称"/>
+                            </div>
+                            <button class="btn btn-primary" @click="refreshUser"><i class="fa fa-search"></i>&nbsp;查询
+                            </button>
+                            <button v-if="hasPermission('wechat:wxuser:synchro')" class="btn btn-primary"
+                                    @click="synchron">
+                                <i class="fa fa-plus"></i>&nbsp;同步用户
+                            </button>
+
+                        </div>
+                        <div class="box-body">
+                            <div class="table-responsive">
+                                <table id="userTable"></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <!--<div class="col-sm-2 control-label"></div>-->
+                    &nbsp;&nbsp;
+                </div>
+            </div>
+        </section>
+    </div>
+    <div v-show="showList=='reply'">
+        <ul class="nav nav-tabs">
+            <li role="presentation" :class="replyActive == 'default' ? 'active' : ''"><a href="#"
+                                                                                         @click="replyActive = 'default'">默认回复设置</a>
+            </li>
+            <li role="presentation" :class="replyActive == 'message' ? 'active' : ''"><a href="#"
+                                                                                         @click="replyActive = 'message'">文字回复</a>
+            </li>
+        </ul>
+        <div v-show="replyActive == 'default'">
+            <section class="content">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="box">
+                            <form class="form-horizontal">
+                                <div class="row">
+                                    <div class="form-group">
+                                        <div class="col-sm-2 control-label">欢迎信息关键字</div>
+                                        <div class="col-sm-8">
+                                           <!-- <input class="form-control" type="text" placeholder="关注回复"
+                                                   v-model="replyDefault.followText" maxlength="200">-->
+                                            <textarea class="form-control" placeholder="关注回复"
+                                                      v-model="replyDefault.followText" maxlength="200" rows="5"></textarea>
+                                            <span>设置用户添加公众帐号好友时，发送的欢迎信息</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-sm-2 control-label">默认回复关键字</div>
+                                        <div class="col-sm-8">
+                                            <!--<input class="form-control" type="text" placeholder="默认回复"-->
+                                                   <!--v-model="replyDefault.defaultText" maxlength="200">-->
+                                            <textarea class="form-control" placeholder="默认回复"
+                                                      v-model="replyDefault.defaultText" maxlength="200" rows="5"></textarea>
+                                            <span>当系统不知道该如何回复粉丝的消息时，默认发送的内容。</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group">
+                                        <div class="col-sm-2 control-label"></div>
+                                        <div class="col-sm-8">
+                                            <input type="button" class="btn btn-primary" @click="updateReplyDefault"
+                                                   value="修改"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div v-show="replyActive == 'message'">
+            <section class="content">
+                <div class="row" v-show="replyEditActive == 'list'">
+                    <div class="col-xs-12">
+                        <div class="box">
+                            <div class="box-header with-border">
+                                <!--<div class="col-xs-2">-->
+                                    <!--<input type="text" placeholder="关键词">-->
+                                <!--</div>-->
+                                <!--<button class="btn btn-primary" @click="reloadMessage"><i class="fa fa-search"></i>&nbsp;查询-->
+                                <!--</button>-->
+                                <!--v-if="hasPermission('wechat:wxapp:save')"-->
+                                <button class="btn btn-primary" @click="addMessage"><i class="fa fa-plus"></i>&nbsp;新增
+                                </button>
+                                <!--v-if="hasPermission('wechat:wxapp:update')"-->
+                                <button class="btn btn-warning" @click="updateMessage"><i class="fa fa-trash-o"></i>&nbsp;修改
+                                </button>
+                                <!--v-if="hasPermission('wechat:wxapp:delete')"-->
+                                <button class="btn btn-danger" @click="delMessage"><i class="fa fa-trash-o"></i>&nbsp;删除
+                                </button>
+                            </div>
+                            <div class="box-body">
+                                <div class="table-responsive">
+                                    <table id="replyTable"></table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" v-show="replyEditActive == 'add'">
+                    <div class="col-xs-12">
+                        <div class="box">
+                            <form class="form-horizontal">
+                                <div class="row">
+                                    <div class="form-group">
+                                        <div class="col-sm-2 control-label">关键词</div>
+                                        <div class="col-sm-8">
+                                            <input class="form-control" type="text" maxlength="200" placeholder="关键词"
+                                                   v-model="reply.reqKey">
+                                            <span>当用户的对话内容符合以上的关键字定义时，会触发这个回复定义。</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-sm-2 control-label">回复内容</div>
+                                        <div class="col-sm-8">
+                                            <input class="form-control" maxlength="200" type="text" placeholder="回复的内容"
+                                                   v-model="reply.repContent">
+                                            <span>回复的内容。</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group">
+                                        <div class="col-sm-2 control-label"></div>
+                                        <div class="col-sm-8">
+                                            <input type="button" class="btn btn-primary" @click="saveMessage" value="保存"/>
+                                            <input type="button" class="btn btn-primary" @click="resultMessage" value="返回"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<script src="../../libs/jquery.min.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../libs/bootstrap.min.js"></script>
+<script src="../../libs/vue.min.js"></script>
+<!--bootstrap-table-->
+<script src="../../plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="../../plugins/bootstrap-table/locale/bootstrap-table-zh-CN.js"></script>
+
+<!--bootstrap-validator-->
+<script src="../../plugins/bootstrap-validator/js/bootstrap-validator.min.js"></script>
+<script src="../../plugins/bootstrap-validator/js/zh_CN.min.js"></script>
+<script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="../../plugins/jqfileupload/js/vendor/jquery.ui.widget.js"></script>
+<script src="../../plugins/jqfileupload/js/jquery.iframe-transport.js"></script>
+<script src="../../plugins/jqfileupload/js/jquery.fileupload.js"></script>
+<script src="../../plugins/datetimepicker/js/bootstrap-datetimepicker.min.js"></script>
+<script src="../../plugins/datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js"></script>
+
+<script src="../../plugins/ueditor/ueditor.config.js"></script>
+<script src="../../plugins/ueditor/ueditor.all.min.js"></script>
+
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+<script src="../../js/common.js"></script>
+
+<script src="../../js/modules/wechat/wxapp.js"></script>
+
+<script type="text/javascript">
+    // 有效时间
+    $('#expDate').datetimepicker({
+        language: 'zh-CN',
+        format: 'yyyy-mm-dd',
+        weekStart: 1,                //一周从哪一天开始
+        startDate: new Date(),         // 开始时间
+        autoclose: true,         // 选完时间后是否自动关闭
+        minView: 2,              // 最精确的时间 0小时 0~4
+        startView: 2,  	//打开时显示的视图。0-'hour' 1-'day' 2-'month' 3-'year' 4-'decade'
+        todayBtn: true           // 当天日期按钮
+    }).on('changeDate', function (ev) {
+        vm.wxApp.expDate = ev.date.getFullYear() + "-" + (ev.date.getMonth() + 1 < 10 ? '0' : '') + (ev.date.getMonth() + 1) + "-" + (ev.date.getDate() < 10 ? '0' : '') + (ev.date.getDate())
+
+    });
+
+
+    // 删除图片
+    function removePic(obj) {
+        vm.wxApp.headLogo = '';
+    }
+
+    //删除校验文件
+    function removecheckFile(obj) {
+        for(var i=0;i<vm.checkFile.length;i++) {
+            if (vm.checkFile[i].picUrl===obj.parentElement.children[0].currentSrc) {
+                vm.checkFile.splice(i, 1);
+            }
+        }
+    }
+
+
+
+
+    $(function () {
+
+        // 图片上传
+        var url = "/web/file/upload";
+        $('#fileupload').fileupload({
+            url: url,
+            dataType: 'json',
+            autoUpload: true,
+            acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
+            maxFileSize: 153600,
+            maxNumberOfFiles: 1,
+            done: function (e, data) {
+                if (data.result.code == 0) {
+                    vm.wxApp.headLogo = data.result.url;
+                }
+            },
+            add: function (e, data) {
+                var bl = true;
+                $.each(data.files, function (index, file) {
+                    if (!file || (file.name.indexOf('.jpg') == -1 && file.name.indexOf('.gif') == -1 && file.name.indexOf('.png') == -1)) {
+                        alert('请上传！格式为gif、jpeg、jpg、png');
+                        bl = false;
+                        return;
+                    }
+                });
+
+                if (!bl) return;
+
+                if (data.autoUpload || (data.autoUpload !== false && $(this).fileupload('option', 'autoUpload'))) {
+                    data.process().done(function () {
+                        data.submit();
+                    });
+                }
+
+            }
+        }).prop('disabled', !$.support.fileInput)
+            .parent().addClass($.support.fileInput ? undefined : 'disabled');
+
+        // 校验文件上传
+        var url = "/web/file/uploadCheckFile";
+        $('#checkfileupload').fileupload({
+            url: url,
+            dataType: 'json',
+            autoUpload: true,
+            acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
+            maxFileSize: 153600,
+            maxNumberOfFiles: 10,
+            done: function (e, data) {
+                if (data.result.code == 0) {
+                    var image = {
+                        picUrl: data.result.url
+                    };
+                    vm.checkFile.push(image);                }
+            },
+            add: function (e, data) {
+                var bl = true;
+                $.each(data.files, function (index, file) {
+                    /*if (!file || (file.name.indexOf('.jpg') == -1 && file.name.indexOf('.gif') == -1 && file.name.indexOf('.png') == -1)) {
+                        alert('请上传！格式为gif、jpeg、jpg、png');
+                        bl = false;
+                        return;
+                    }*/
+                });
+
+                if (!bl) return;
+
+                if (data.autoUpload || (data.autoUpload !== false && $(this).fileupload('option', 'autoUpload'))) {
+                    data.process().done(function () {
+                        data.submit();
+                    });
+                }
+
+            }
+        }).prop('disabled', !$.support.fileInput)
+            .parent().addClass($.support.fileInput ? undefined : 'disabled');
+
+    });
+
+
+    var ue = UE.getEditor('container', {
+        toolbars: [
+            ['fullscreen', 'source', 'undo', 'redo', 'bold', 'italic', 'underline', 'fontborder', 'simpleupload',
+                'insertvideo', 'justifyleft', 'justifyright', 'justifycenter', 'fontfamily', 'fontsize']
+        ],
+        autoHeightEnabled: true,
+        autoFloatEnabled: true,
+        initialFrameHeight: 600
+    });
+</script>
+</body>
+</html>
+
+<!--本组件样式-->
+<style lang="less" scoped="scoped">
+    /* 公共颜色变量 */
+    .clearfix {
+        *zoom: 1;
+    }
+
+    .clearfix::after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+    div {
+        text-align: left;
+    }
+
+    .weixin-hd {
+        color: #fff;
+        text-align: center;
+        position: relative;
+        bottom: 426px;
+        left: 0px;
+        width: 300px;
+        height: 64px;
+        background: transparent url(/images/menu_head.png) no-repeat 0 0;
+        background-position: 0 0;
+        background-size: 100%
+    }
+
+    .weixin-title {
+        color: #fff;
+        font-size: 14px;
+        width: 100%;
+        text-align: center;
+        position: absolute;
+        top: 33px;
+        left: 0px;
+    }
+
+    .weixin-menu {
+        background: transparent url(/images/menu_foot.png) no-repeat 0 0;
+        padding-left: 43px;
+        font-size: 12px
+    }
+
+    .menu_option {
+        width: 40% !important;
+    }
+
+    .public-account-management {
+        min-width: 1200px;
+        width: 1200px;
+        margin: 0 auto;
+        margin-top: 50px;
+    }
+
+    .public-account-management .left {
+        float: left;
+        display: inline-block;
+        width: 350px;
+        height: 715px;
+        background: url("../../images/iphone_backImg.png") no-repeat;
+        background-size: 100% auto;
+        padding: 518px 25px 88px;
+        position: relative;
+        box-sizing: border-box
+    }
+
+    /*第一级菜单*/
+
+    .public-account-management .left .menu .menu_bottom {
+        position: relative;
+        float: left;
+        display: inline-block;
+        box-sizing: border-box;
+        width: 85.5px;
+        text-align: center;
+        border: 1px solid #ebedee;
+        background-color: #fff;
+        cursor: pointer
+    }
+
+    .public-account-management .left .menu .menu_bottom.menu_addicon {
+        position: relative;
+        float: left;
+        display: inline-block;
+        box-sizing: border-box;
+        width: 85.5px;
+        text-align: center;
+        border: 1px solid #ebedee;
+        background-color: #fff;
+        cursor: pointer;
+        height: 46px;
+        line-height: 46px;
+    }
+
+    .public-account-management .left .menu .menu_bottom .menu_item {
+        height: 44px;
+        line-height: 44px;
+        text-align: center;
+        box-sizing: border-box
+    }
+
+    .public-account-management .left .menu .menu_bottom .menu_item.active {
+        height: 44px;
+        line-height: 44px;
+        text-align: center;
+        box-sizing: border-box;
+        border: 1px solid #2bb673;
+    }
+
+    .public-account-management .left .menu .menu_bottom .menu_subItem {
+        height: 44px;
+        line-height: 44px;
+        text-align: center;
+        box-sizing: border-box
+    }
+
+    .public-account-management .left .menu .menu_bottom .menu_subItem.active {
+        height: 44px;
+        line-height: 44px;
+        text-align: center;
+        box-sizing: border-box;
+        border: 1px solid #2bb673;
+    }
+
+    /*i {
+        color: #2bb673;
+    }*/
+
+    /*第二级菜单*/
+    .public-account-management .left .menu .submenu {
+        position: absolute;
+        width: 85.5px;
+        bottom: 45px
+    }
+
+    .public-account-management .left .menu .submenu .subtitle {
+        background-color: #fff;
+        box-sizing: border-box;
+        margin-bottom: 2px;
+    }
+
+    .save_btn {
+        position: absolute;
+        bottom: 20px;
+        left: 100px;
+    }
+
+    /*右边菜单内容*/
+    .public-account-management .right {
+        float: left;
+        width: 63%;
+        background-color: #e8e7e7;
+        padding: 20px;
+        margin-left: 20px;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+    }
+
+    .public-account-management .right .configure_page .delete_btn {
+        text-align: right;
+        margin-bottom: 15px;
+    }
+
+    .public-account-management .right .configure_page .menu_content {
+        margin-top: 20px;
+    }
+
+    .public-account-management .right .configure_page .configur_content {
+        margin-top: 20px;
+        background-color: #fff;
+        padding: 20px 10px;
+        border-radius: 5px
+    }
+
+    .public-account-management .right .configure_page .blue {
+        color: #29b6f6;
+        margin-top: 10px;
+    }
+
+    .public-account-management .right .configure_page .applet {
+        margin-bottom: 20px;
+
+    }
+
+    .public-account-management .right .configure_page span {
+        width: 20%;
+    }
+
+    .public-account-management .right .configure_page .material .input_width {
+        width: 30%;
+    }
+
+    .public-account-management .right .configure_page .material .el-textarea {
+        width: 80%
+    }
+</style>
+
+<!--修改UI框架样式-->
+<style lang="less">
+
+    .public-account-management .el-input {
+        width: 70%;
+        margin-right: 2%;
+    }
+
+</style>
+
+<!--素材样式-->
+<style lang="scss" scoped>
+    .pagination {
+        text-align: right;
+        margin-right: 25px;
+    }
+
+    .select-item {
+        width: 280px;
+        padding: 10px;
+        margin: 0 auto 10px auto;
+        border: 1px solid #eaeaea;
+    }
+
+    .select-item2 {
+        padding: 10px;
+        margin: 0 auto 10px auto;
+        border: 1px solid #eaeaea;
+    }
+
+    .ope-row {
+        padding-top: 10px;
+        text-align: center;
+    }
+
+    .item-name {
+        font-size: 12px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-align: center;
+    }
+</style>
+
+<!-- news -->
+<style lang="scss">
+    .news-home {
+        background-color: #FFFFFF;
+        width: 280px;
+        margin: auto;
+    }
+
+    .news-main {
+        width: 280px;
+        margin: auto;
+    }
+
+    .news-content {
+        background-color: #acadae;
+        width: 280px;
+        height: 120px;
+        position: relative;
+    }
+
+    .news-content-title {
+        display: inline-block;
+        font-size: 12px;
+        color: #FFFFFF;
+        position: absolute;
+        left: 0px;
+        bottom: 0px;
+        background-color: black;
+        width: 274px;
+        padding: 3px;
+        opacity: 0.65;
+        white-space: normal;
+        box-sizing: unset !important
+    }
+
+    .news-main-item {
+        background-color: #FFFFFF;
+        padding: 5px 0px;
+        border-top: 1px solid #eaeaea;
+    }
+
+    .news-content-item {
+        height: 50px;
+        position: relative;
+    }
+
+    .news-content-item-title {
+        display: inline-block;
+        font-size: 10px;
+        width: 220px;
+        margin-left: 5px;
+        white-space: normal
+    }
+
+    .news-content-item-img {
+        float: right;
+        display: inline-block;
+        height: 50px;
+        width: 50px;
+        background-color: #acadae;
+        margin-right: 5px;
+    }
+
+    .material-img {
+        width: 100%;
+    }
+</style>

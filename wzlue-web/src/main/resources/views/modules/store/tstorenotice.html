@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>门店公告表</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/AdminLTE.min.css">
+    <link rel="stylesheet" href="../../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+    <link rel="stylesheet" href="../../css/bootstrap-table.min.css">
+    <link rel="stylesheet" href="../../plugins/bootstrap-validator/css/bootstrap-validator.min.css">
+    <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../plugins/treegrid/jquery.treegrid.css">
+
+    <link rel="stylesheet" href="../../plugins/fileinput/css/fileinput.min.css">
+    <link rel="stylesheet" href="../../plugins/jqfileupload/css/jquery.fileupload.css">
+
+    <!--可搜索下拉css-->
+    <link href="../../plugins/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet"/>
+
+    <style>
+
+        select {
+            -webkit-appearance: none;
+            -webkit-tap-highlight-color: #fff;
+            outline: 0;
+        }
+    </style>
+
+</head>
+<body>
+<div id="rrapp" v-cloak class="content-wrapper wzl-content-wrapper">
+    <section class="content-header">
+        <h1>
+            门店公告表 &nbsp;<small v-if="title!=''">{{title}}</small>
+        </h1>
+    </section>
+    <div v-show="showList">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <div class="box-header with-border">
+                            <div class="col-xs-2" v-if="user_Store == 0">
+
+                                <select id="appIdParam" class=" form-control selectpicker"
+                                        data-live-search="true"></select>
+
+                            </div>
+
+                            <button class="btn btn-primary" @click="query"><i class="fa fa-search"></i>&nbsp;{{user_Store == 0 ? '查询' : '刷新'}}</button>
+                            <button v-if="hasPermission('store:tstorenotice:save')" class="btn btn-success"
+                                    @click="add">
+                                <i class="fa fa-plus"></i>&nbsp;新增
+                            </button>
+                            <button v-if="hasPermission('store:tstorenotice:update')" class="btn btn-warning"
+                                    @click="update">
+                                <i class="fa fa-trash-o"></i>&nbsp;修改
+                            </button>
+                            <button v-if="hasPermission('store:tstorenotice:delete')" class="btn btn-danger"
+                                    @click="del">
+                                <i class="fa fa-trash-o"></i>&nbsp;删除
+                            </button>
+                        </div>
+                        <div class="box-body">
+                            <div class="table-responsive">
+                                <table id="table"></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div v-show="!showList">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <form class="form-horizontal">
+                            <div class="row">
+                                <div class="form-group required">
+                                    <div class="col-sm-2 control-label">标题</div>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="noticeTitle" class="form-control"
+                                               v-model="tStoreNotice.noticeTitle" placeholder="标题"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group ">
+
+                                    <div class="col-sm-2 control-label">详情描述</div>
+                                    <div class="col-sm-8">
+                                        <script id="container" name="noticeContent" type="text/plain">
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="row">
+                                <div class="form-group required">
+                                    <div class="col-sm-2 control-label">公告图</div>
+                                    <div class="col-sm-8">
+                                        <span class="btn btn-success fileinput-button">
+										        <i class="glyphicon glyphicon-plus"></i>
+										        <span>选择图片...</span>
+										        <input id="fileupload" type="file" name="file" multiple>
+										    </span>
+                                        建议375*375px;150kb以内,格式为gif、jpeg、jpg、png
+                                        <br>
+                                        <br>
+                                        <div id="files" class="row">
+                                            <div class="col-sm-3 img-wrap" v-if="tStoreNotice.headLogo != ''">
+                                                <img alt="" width="200px" :src="tStoreNotice.headLogo">
+                                                <input name="headLogo" type="hidden" :value="tStoreNotice.headLogo"/>
+                                                <img alt="" src="../../images/remove.png" class="img-remove"
+                                                     onclick="removePic(this)">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group ">
+                                    <div class="col-sm-2 control-label">排序</div>
+                                    <div class="col-sm-8">
+                                        <input type="number" name="noticeSort" class="form-control"
+                                               v-model="tStoreNotice.noticeSort" placeholder="排序"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="form-group required">
+                                    <div class="col-sm-2 control-label">公众号名称</div>
+                                    <div class="col-sm-8">
+                                        <select class="form-control" id="appId" name="appId"
+                                                v-model="tStoreNotice.appId">
+                                            <option :value="item.id" v-for="item in categoryList">{{item.name}}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label"></div>
+                                    <input type="button" class="btn btn-primary" @click="validate" value="确定"/>
+                                    &nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="showTableList"
+                                                       value="返回"/>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script src="../../libs/jquery.min.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../libs/bootstrap.min.js"></script>
+<script src="../../libs/vue.min.js"></script>
+<!--bootstrap-table-->
+<script src="../../plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="../../plugins/bootstrap-table/locale/bootstrap-table-zh-CN.js"></script>
+<!--bootstrap-validator-->
+<script src="../../plugins/bootstrap-validator/js/bootstrap-validator.min.js"></script>
+<script src="../../plugins/bootstrap-validator/js/zh_CN.min.js"></script>
+
+
+<!--图片上传-->
+<script src="../../plugins/fileinput/js/fileinput.min.js" charset="UTF-8"></script>
+<script src="../../plugins/fileinput/js/locales/zh.js" charset="UTF-8"></script>
+<!--//CKEDITOR  -->
+<script src="../../libs/base64.js"></script>
+<script src="../../plugins/ckeditor/ckeditor.js"></script>
+<script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+<script src="../../plugins/jqfileupload/js/vendor/jquery.ui.widget.js"></script>
+<script src="../../plugins/jqfileupload/js/jquery.iframe-transport.js"></script>
+<script src="../../plugins/jqfileupload/js/jquery.fileupload.js"></script>
+<script src="../../plugins/ueditor/ueditor.config.js"></script>
+<script src="../../plugins/ueditor/ueditor.all.min.js"></script>
+<script src="../../js/common.js"></script>
+
+<!--可搜索下拉js-->
+<script src="../../plugins/bootstrap-select/js/bootstrap-select.min.js"></script>
+<script src="../../plugins/bootstrap-select/js/i18n/defaults-zh_CN.min.js"></script>
+
+<script src="../../js/modules/store/tstorenotice.js"></script>
+
+
+<script>
+
+    // 删除图片
+    function removePic(obj) {
+        vm.tStoreNotice.headLogo = '';
+    }
+
+    $(function () {
+
+        // 图片上传
+        var url = "/web/file/upload";
+        $('#fileupload').fileupload({
+            url: url,
+            dataType: 'json',
+            autoUpload: true,
+            acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
+            maxFileSize: 153600,
+            maxNumberOfFiles: 1,
+            done: function (e, data) {
+                if (data.result.code == 0) {
+                    vm.tStoreNotice.headLogo = data.result.url;
+                }
+            },
+            add: function (e, data) {
+                var bl = true;
+                $.each(data.files, function (index, file) {
+                    if (!file || (file.name.indexOf('.jpg') == -1 && file.name.indexOf('.gif') == -1 && file.name.indexOf('.png') == -1)) {
+                        alert('请上传！格式为gif、jpeg、jpg、png');
+                        bl = false;
+                        return;
+                    }
+                });
+
+                if (!bl) return;
+
+                if (data.autoUpload || (data.autoUpload !== false && $(this).fileupload('option', 'autoUpload'))) {
+                    data.process().done(function () {
+                        data.submit();
+                    });
+                }
+
+            }
+        }).prop('disabled', !$.support.fileInput)
+            .parent().addClass($.support.fileInput ? undefined : 'disabled');
+
+    });
+
+
+    var ue = UE.getEditor('container', {
+        toolbars: [
+            ['fullscreen', 'source', 'undo', 'redo', 'bold', 'italic', 'underline', 'fontborder', 'simpleupload',
+                /*'insertvideo',*/ 'justifyleft', 'justifyright', 'justifycenter', 'fontfamily', 'fontsize']
+        ],
+        autoHeightEnabled: true,
+        autoFloatEnabled: true,
+        initialFrameHeight: 400
+    });
+</script>
+
+<script type="text/javascript">
+    $(function () {
+        /* $(".selectpicker").selectpicker({
+             noneSelectedText: '请选择'
+         });*/
+        $(window).on('load', function () {
+            $('.selectpicker').selectpicker('val', '');
+            $('.selectpicker').selectpicker('refresh');
+        });
+
+        //下拉数据加载
+        $.ajax({
+            type: 'get',
+            url: baseURL + "wechat/wxapp/selectAll",
+            dataType: 'json',
+            success: function (datas) {//返回list数据并循环获取
+                var wxlist = datas.wxAppList;
+                var select = $("#appIdParam");
+                select.append("<option value=''>全部门店</option>");
+                for (var i = 0; i < wxlist.length; i++) {
+                    select.append("<option value='" + wxlist[i].id + "'>" + wxlist[i].name + "</option>");
+                }
+                $('.selectpicker').selectpicker('val', '');
+                $('.selectpicker').selectpicker('refresh');
+            }
+        });
+
+        $("#appIdParam").change('shown.bs.select', function (e) {
+            vm.queryParams.appId = $("#appIdParam").val();
+        })
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>应聘管理</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/AdminLTE.min.css">
+    <link rel="stylesheet" href="../../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+    <link rel="stylesheet" href="../../css/bootstrap-table.min.css">
+    <link rel="stylesheet" href="../../plugins/bootstrap-validator/css/bootstrap-validator.min.css">
+    <link rel="stylesheet" href="../../plugins/bootstrap-select/css/bootstrap-select.min.css">
+    <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../plugins/treegrid/jquery.treegrid.css">
+
+</head>
+<script charset="utf-8" src="https://map.qq.com/api/js?v=2.exp&key=I6YBZ-UBK33-IIT33-Y2FUC-LPZVQ-AFFBY"></script>
+<style>
+    .modal-backdrop {
+        z-index: 0;
+    }
+
+    /*模态框遮罩层去掉*/
+
+    #map {
+        height: 600px;
+        margin: 0 auto;
+        padding: 0px;
+        width: 80%;
+    }
+
+    #container {
+        width: 70%;
+        height: 100%;
+        position: relative;
+        bottom: 0;
+
+    }
+
+    #info {
+        font-size: 14px;
+        background: #FFF;
+        width: 270px;
+        height: 50px;
+        border-radius: 3px;
+        line-height: 50px;
+        text-align: center;
+
+    }
+
+    #searchDiv {
+        float: right;
+        width: 26%;
+    }
+
+    .clear {
+        *zoom: 1;
+    }
+
+    .clear:after {
+        content: "";
+        display: block;
+        clear: both;
+    }
+
+    .map_box {
+        display: flex;
+        justify-content: space-between;
+        height: 500px;
+
+    }
+
+    select {
+        -webkit-appearance: none;
+        -webkit-tap-highlight-color: #fff;
+        outline: 0;
+    }
+
+</style>
+
+<body>
+<div id="rrapp" v-cloak class="content-wrapper wzl-content-wrapper">
+    <section class="content-header">
+        <h1>
+            应聘管理 &nbsp;<small v-if="title!=''">{{title}}</small>
+
+            <input v-show="!showList" style="float: right" type="button" class="btn btn-warning" @click="showTableList"
+                   value="返回"/>
+        </h1>
+    </section>
+    <div v-show="showList">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <div class="box-header with-border">
+
+                            <!--<div class="col-xs-2">
+                                <select class="form-control" data-width="auto" v-model="params.stateFeedback">
+                                    <option value="">用人状态</option>
+                                    <option value="1">已报名</option>
+                                    <option value="2">已面试</option>
+                                    <option value="3">未录用</option>
+                                    <option value="4">已入职</option>
+                                    <option value="5">已离职</option>
+                                    <option value="6">其他</option>
+                                </select>
+                            </div>-->
+                            <div class="col-xs-2">
+                                <select class="form-control" data-width="auto" v-model="params.distributionStatus">
+                                    <option value="">分配状态</option>
+                                    <option value="0">未分配</option>
+                                    <option value="1">已分配</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" @click="query"><i class="fa fa-search"></i>&nbsp;查询</button>
+
+                            <button v-if="hasPermission('jobApplication:jobapplication:delete')" class="btn btn-danger"
+                                    @click="del">
+                                <i class="fa fa-trash-o"></i>&nbsp;删除
+                            </button>
+                        </div>
+                        <div class="box-body">
+                            <div class="table-responsive">
+                                <table id="table"></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+
+    <div v-show="showJobInfo" class="panel panel-default" style="margin-top: 20px;">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <!--报名信息-->
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <span>报名信息</span>
+                    </div>
+                    <div class="panel-body">
+                        <br>
+                        <div class="row">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <td class="col-sm-1">姓名</td>
+                                    <td class="col-sm-8">{{jobApplication.realName}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-1">手机号</td>
+                                    <td class="col-sm-8">{{jobApplication.phone}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-1">微信号</td>
+                                    <td class="col-sm-8">{{jobApplication.wechatNumber}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-1">性别</td>
+
+                                    <template>
+                                        <td class="col-sm-8" v-if="jobApplication.sex==1">男</td>
+                                        <td class="col-sm-8" v-if="jobApplication.sex==2">女</td>
+                                    </template>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-1">年龄</td>
+                                    <td class="col-sm-8">{{jobApplication.age}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-1">工作经验</td>
+                                    <td class="col-sm-8">{{jobApplication.workExperience}}</td>
+                                </tr>
+
+                                <!---->
+                                <tr v-if="jobApplication.type==1">
+                                    <td class="col-sm-1">岗位类型</td>
+                                    <td class="col-sm-8">{{jobApplication.jobStr}}</td>
+                                </tr>
+                                <tr v-if="jobApplication.type==1">
+                                    <td class="col-sm-1">期望薪资</td>
+                                    <td class="col-sm-8">{{jobApplication.salaryStr}}</td>
+                                </tr>
+                                <tr v-if="jobApplication.type==1">
+                                    <td class="col-sm-1">期望工作地点</td>
+                                    <td class="col-sm-8">
+                                        {{jobApplication.provinceStr}}{{jobApplication.cityStr}}{{jobApplication.areaStr}}
+                                    </td>
+                                </tr>
+
+                                <!---->
+                                <tr>
+                                    <td class="col-sm-1">报名类型</td>
+                                    <template>
+                                        <td class="col-sm-8" v-if="jobApplication.type==1">主动报名</td>
+                                        <td class="col-sm-8" v-if="jobApplication.type==2">招聘报名</td>
+                                    </template>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-1">报名时间</td>
+                                    <td class="col-sm-8">{{jobApplication.createDate}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-1">状态反馈</td>
+                                    <template>
+                                        <td class="col-sm-8" v-if="jobApplication.stateFeedback==1">已报名</td>
+                                        <td class="col-sm-8" v-if="jobApplication.stateFeedback==2">已面试</td>
+                                        <td class="col-sm-8" v-if="jobApplication.stateFeedback==3">未录用</td>
+                                        <td class="col-sm-8" v-if="jobApplication.stateFeedback==4">已入职</td>
+                                        <td class="col-sm-8" v-if="jobApplication.stateFeedback==5">已离职</td>
+                                        <td class="col-sm-8" v-if="jobApplication.stateFeedback==6">其他</td>
+                                    </template>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-1">反馈信息</td>
+                                    <td class="col-sm-8">{{jobApplication.feedback}}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <br>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div v-show="showRecruitInfo" class="panel panel-default" style="margin-top: 20px;">
+
+
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <!--招聘信息-->
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <span>招聘信息</span>
+                    </div>
+                    <div class="panel-body">
+                        <br>
+                        <div class="row">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <td class="col-sm-1">招聘标题</td>
+                                    <td class="col-sm-8">{{shopRecruitment.title}}</td>
+                                </tr>
+                                <tr>
+                                    <td>月薪</td>
+                                    <td>{{shopRecruitment.salaryStr}}</td>
+                                </tr>
+                                <tr class="hourlyWage">
+                                    <td>时薪</td>
+                                    <td>{{shopRecruitment.hourlyWage}}&nbsp;&nbsp;&nbsp;元/时</td>
+                                </tr>
+                                <tr>
+                                    <td>招聘人数</td>
+                                    <td>{{shopRecruitment.numberOfRecruitment}}&nbsp;&nbsp;&nbsp;人</td>
+                                </tr>
+                                <tr>
+                                    <td>工作时间</td>
+                                    <td>{{shopRecruitment.workTime}}</td>
+                                </tr>
+                                <tr>
+                                    <td>职位描述</td>
+                                    <td>{{shopRecruitment.jobDescription}}</td>
+                                </tr>
+                                <tr>
+                                    <td>招聘要求</td>
+                                    <td>{{shopRecruitment.jobRequirement}}</td>
+                                </tr>
+                                <tr>
+                                    <td>薪资待遇</td>
+                                    <td>{{shopRecruitment.jobResponsibilities}}</td>
+                                </tr>
+                                <tr>
+                                    <td>公司福利</td>
+                                    <td>{{shopRecruitment.companyBenefits}}</td>
+                                </tr>
+                                <tr>
+                                    <td>标&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;签</td>
+                                    <td>
+                                        <laebl-gruop>
+                                            <label class="radio-inline" v-for="item in labels">
+                                                <input name="configId2" type="checkbox" :text="item.configValue"
+                                                       :value="item.configId" :disabled="true">&nbsp;{{item.configValue}}
+                                            </label>
+                                        </laebl-gruop>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>推荐岗位</td>
+                                    <td>{{shopRecruitment.recommendFlag==1?'√':''}}</td>
+                                </tr>
+                                <tr>
+                                    <td>灵活用工</td>
+                                    <td>{{shopRecruitment.famousFlag==1?'√':''}}</td>
+                                </tr>
+                               <!-- <tr>
+                                    <td>每日工时</td>
+                                    <td>{{shopRecruitment.workHours}}&nbsp;&nbsp;&nbsp;小时</td>
+                                </tr>-->
+                                <tr>
+                                    <td>轮播图</td>
+                                    <td>
+                                        <div class="row">
+                                            <div v-for="(item, index) in image11">
+                                                <div class="col-sm-1 img-wrap" v-if="image11[index].picUrl != '' && image11[index].picUrl != null">
+                                                    <img alt="" width="100px" height="80px" :src="image11[index].picUrl"
+                                                         onclick="window.open(this.src,'_blank')">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <br>
+                    </div>
+                </div>
+
+
+
+                <!--返费信息-->
+                <div class="panel panel-default ffxx" >
+                    <div class="panel-heading">
+                        <span>返费信息</span>
+                    </div>
+                    <div class="panel-body">
+                        <br>
+                        <div class="row">
+                                <!--<table class="table table-bordered">
+
+                                    <tr >
+                                        <td rowspan="0" class="col-sm-1">返费方式</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="col-sm-8">
+                                            {{shopRecruitment.feeReturnType == 1 ? '按天' : '按小时'}}
+                                        </td>
+                                    </tr>
+                                </table>-->
+
+                                <table class="table table-bordered">
+
+                                    <tr >
+                                        <td rowspan="0"  class="col-sm-1">返费等级</td>
+                                    </tr>
+                                    <tr v-for="(item,index) in feeReturnList">
+                                        <td class="col-sm-8">
+                                            {{feeReturnList[index].days}}&nbsp;&nbsp;&nbsp;{{shopRecruitment.feeReturnType == 1 ? '天':'小时'}}
+                                            &nbsp;&nbsp;&nbsp;&nbsp;
+                                            {{feeReturnList[index].reward}}&nbsp;&nbsp;&nbsp;元
+                                        </td>
+                                    </tr>
+                                </table>
+
+                        </div>
+                        <br>
+                    </div>
+                </div>
+
+
+
+                <!--企业信息-->
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <span>企业信息</span>
+                    </div>
+                    <div class="panel-body">
+                        <br>
+                        <div class="row">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <td class="col-sm-1">招聘单位</td>
+                                    <td class="col-sm-8">{{shopRecruitment.recruitmentFirm}}</td>
+                                </tr>
+                                <tr>
+                                    <td>企业规模</td>
+                                    <td>{{shopRecruitment.enterpriseSize}}&nbsp;&nbsp;&nbsp;人</td>
+                                </tr>
+                                <tr>
+                                    <td>企业年限</td>
+                                    <td>{{shopRecruitment.enterpriseAge}}&nbsp;&nbsp;&nbsp;年</td>
+                                </tr>
+
+                                <tr>
+                                    <td>企业信息</td>
+                                    <td>{{shopRecruitment.enterpriseInfo}}</td>
+                                </tr>
+
+                                <tr>
+                                    <td>企业LOGO</td>
+                                    <td><img width="100px" height="80px" alt="企业logo" :src="shopRecruitment.logo"></td>
+                                </tr>
+                                <tr>
+                                    <td>企业地址</td>
+                                    <td>{{shopRecruitment.provinceStr}}&nbsp;&nbsp;{{shopRecruitment.cityStr}}&nbsp;&nbsp;{{shopRecruitment.areaStr}}&nbsp;&nbsp;{{shopRecruitment.streetStr}}</td>
+                                </tr>
+                                <tr>
+                                    <td>详细地址</td>
+                                    <td>{{shopRecruitment.position}}</td>
+                                </tr>
+                                <tr>
+                                    <td>经纬度</td>
+                                    <td>经度：&nbsp;&nbsp;{{shopRecruitment.longitude}}，&nbsp;&nbsp;纬度：&nbsp;&nbsp;{{shopRecruitment.latitude}}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <br>
+                    </div>
+                </div>
+
+                <!--申请材料-->
+                <!--<div class="panel panel-default" v-if="platform">
+                    <div class="panel-heading">
+                        <span>申请材料</span>
+                    </div>
+                    <div class="panel-body">
+                        <br>
+                        <div class="row">
+
+                            <table class="table table-bordered">
+
+                                <tr>
+                                    <td class="col-sm-1">缴纳保证金</td>
+                                    <td class="col-sm-8">
+                                        {{shopRecruitment.hasEarnest==1?'已交':'未交'}}
+                                    </td>
+                                </tr>
+
+                                <tr v-show="shopRecruitment.hasEarnest==1">
+                                    <td>保证金</td>
+                                    <td>
+                                        {{shopRecruitment.numberOfRecruitment}}人*{{earnestOne}}元/人={{shopRecruitment.earnest}}元
+                                    </td>
+                                </tr>
+
+                                <tr v-show="shopRecruitment.hasEarnest!=1">
+                                    <td>参保人数</td>
+                                    <td>&nbsp;&nbsp;&nbsp;{{applicationMaterials.people}}人</td>
+                                </tr>
+                                <tr>
+                                    <td>营业执照</td>
+                                    <td>
+                                        <div id="files1" class="row">
+                                            <div class="col-sm-2 img-wrap" v-if="image1.picUrl != ''">
+                                                <img alt="" width="100px" height="100px" :src="image1.picUrl" onclick="window.open(this.src,'_blank')">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                &lt;!&ndash;劳动派遣证&ndash;&gt;
+                                <tr v-show="shopRecruitment.hasEarnest!=1">
+                                    <td>劳动派遣证</td>
+                                    <td>
+                                        <div id="files2" class="row">
+                                            <div class="col-sm-2 img-wrap" v-if="image2.picUrl != ''">
+                                                <img alt="" width="100px" height="100px" :src="image2.picUrl" onclick="window.open(this.src,'_blank')">
+
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                &lt;!&ndash;人力资源许可证&ndash;&gt;
+                                <tr v-show="shopRecruitment.hasEarnest!=1">
+                                    <td>人力资源许可证</td>
+                                    <td>
+                                        <div id="files3" class="row">
+                                            <div class="col-sm-2 img-wrap" v-if="image3.picUrl != ''">
+                                                <img alt="" width="100px" height="100px" :src="image3.picUrl" onclick="window.open(this.src,'_blank')">
+
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+
+                                &lt;!&ndash;纳税证明&ndash;&gt;
+                                <tr v-show="shopRecruitment.hasEarnest!=1">
+                                    <td>纳税证明</td>
+                                    <td>
+                                        <div id="files4" class="row">
+                                            <div v-for="(item, index) in image4">
+                                                <div class="col-sm-2 img-wrap" v-if="image4[index].picUrl != ''" onclick="window.open(this.src,'_blank')">
+                                                    <img alt="" width="100px" height="100px"
+                                                         :src="image4[index].picUrl">
+
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+
+                                &lt;!&ndash;银行流水&ndash;&gt;
+                                <tr v-show="shopRecruitment.hasEarnest!=1">
+                                    <td>银行流水</td>
+                                    <td>
+                                        <div id="files5" class="row">
+                                            <div v-for="(item, index) in image5">
+                                                <div class="col-sm-2 img-wrap" v-if="image5[index].picUrl != ''" onclick="window.open(this.src,'_blank')">
+                                                    <img alt="" width="100px" height="100px"
+                                                         :src="image5[index].picUrl">
+
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+
+                                &lt;!&ndash;三家大企业合作合同&ndash;&gt;
+                                <tr v-show="shopRecruitment.hasEarnest!=1">
+                                    <td>三家大企业合作合同</td>
+                                    <td>
+                                        <div id="files6" class="row">
+                                            <div v-for="(item, index) in image6">
+                                                <div class="col-sm-2 img-wrap" v-if="image6[index].picUrl != ''" onclick="window.open(this.src,'_blank')">
+                                                    <img alt="" width="100px" height="100px"
+                                                         :src="image6[index].picUrl">
+
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>与派遣公司签署的协议</td>
+                                    <td>
+                                        <div id="files7" class="row">
+                                            <div v-for="(item, index) in image7">
+                                                <div class="col-sm-2 img-wrap" v-if="image7[index].picUrl != ''" onclick="window.open(this.src,'_blank')">
+                                                    <img alt="" width="100px" height="100px"
+                                                         :src="image7[index].picUrl">
+
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                &lt;!&ndash;办公场地租赁合同&ndash;&gt;
+                                <tr v-show="shopRecruitment.hasEarnest!=1">
+                                    <td>办公场地租赁合同</td>
+                                    <td>
+                                        <div id="files8" class="row">
+                                            <div v-for="(item, index) in image8">
+                                                <div class="col-sm-2 img-wrap" v-if="image8[index].picUrl != ''" onclick="window.open(this.src,'_blank')">
+                                                    <img alt="" width="100px" height="100px"
+                                                         :src="image8[index].picUrl">
+
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                &lt;!&ndash;法人或负责人个人房产证&ndash;&gt;
+                                <tr v-show="shopRecruitment.hasEarnest!=1">
+                                    <td>法人或负责人个人房产证</td>
+                                    <td>
+                                        <div id="files9" class="row">
+                                            <div v-for="(item, index) in image9">
+                                                <div class="col-sm-2 img-wrap" v-if="image9[index].picUrl != ''" onclick="window.open(this.src,'_blank')">
+                                                    <img alt="" width="100px" height="100px"
+                                                         :src="image9[index].picUrl">
+
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+
+                                &lt;!&ndash;参保人数社保局网站截图&ndash;&gt;
+                                <tr v-show="shopRecruitment.hasEarnest!=1">
+                                    <td>参保人数社保局网站截图</td>
+                                    <td>
+                                        <div id="files10" class="row">
+                                            <div v-for="(item, index) in image10">
+                                                <div class="col-sm-2 img-wrap" v-if="image10[index].picUrl != ''" onclick="window.open(this.src,'_blank')">
+                                                    <img alt="" width="100px" height="100px"
+                                                         :src="image10[index].picUrl">
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <br>
+                </div>-->
+
+                <!--申请材料-->
+                <div class="panel panel-default" v-if="platform">
+                    <div class="panel-heading">
+                        <span>申请材料</span>
+                    </div>
+                    <div class="panel-body">
+                        <br>
+                        <div class="row">
+
+                            <table class="table table-bordered">
+
+                                <tr>
+                                    <td class="col-sm-1">缴纳保证金</td>
+                                    <td class="col-sm-8">
+                                        {{shopRecruitment.hasEarnest==1?'已交':'未交'}}
+                                    </td>
+                                </tr>
+
+                                <tr v-show="shopRecruitment.hasEarnest==1">
+                                    <td>保证金</td>
+                                    <td>
+                                        {{shopRecruitment.numberOfRecruitment}}人*{{shopRecruitment.earnestOne}}元/人={{shopRecruitment.earnest}}元
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>联系电话</td>
+                                    <td>{{applicationMaterials.phone}}</td>
+                                </tr>
+
+                                <tr v-show="shopRecruitment.hasEarnest!=1">
+                                    <td>参保人数</td>
+                                    <td>&nbsp;&nbsp;&nbsp;{{applicationMaterials.people}}人</td>
+                                </tr>
+                                <tr >
+                                    <td>营业执照</td>
+                                    <td>
+                                        <div id="files1" class="row">
+                                            <div class="col-sm-2 img-wrap" v-if="image1.picUrl != '' && image1.picUrl != null">
+                                                <img alt="" width="100px" height="100px" :src="image1.picUrl" onclick="window.open(this.src,'_blank')">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!--劳动派遣证-->
+                                <tr v-show="shopRecruitment.hasEarnest!=1">
+                                    <td>劳动派遣证</td>
+                                    <td>
+                                        <div id="files2" class="row">
+                                            <div class="col-sm-2 img-wrap" v-if="image2.picUrl != '' && image2.picUrl != null">
+                                                <img alt="" width="100px" height="100px" :src="image2.picUrl" onclick="window.open(this.src,'_blank')">
+
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!--人力资源许可证-->
+                                <tr v-show="shopRecruitment.hasEarnest!=1">
+                                    <td>人力资源许可证</td>
+                                    <td>
+                                        <div id="files3" class="row">
+                                            <div class="col-sm-2 img-wrap" v-if="image3.picUrl != '' && image3.picUrl != null">
+                                                <img alt="" width="100px" height="100px" :src="image3.picUrl" onclick="window.open(this.src,'_blank')">
+
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+
+                                <!--纳税证明-->
+                                <tr v-show="shopRecruitment.hasEarnest!=1">
+                                    <td>纳税证明</td>
+                                    <td>
+                                        <div id="files4" class="row">
+                                            <div v-for="(item, index) in image4">
+                                                <div class="col-sm-2 img-wrap" v-if="image4[index].picUrl != '' && image4[index].picUrl != null">
+                                                    <img alt="" width="100px" height="100px"
+                                                         :src="image4[index].picUrl" onclick="window.open(this.src,'_blank')">
+
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+
+                                <!--银行流水-->
+                                <tr v-show="shopRecruitment.hasEarnest!=1">
+                                    <td>银行流水</td>
+                                    <td>
+                                        <div id="files5" class="row">
+                                            <div v-for="(item, index) in image5">
+                                                <div class="col-sm-2 img-wrap" v-if="image5[index].picUrl != ''  && image5[index].picUrl != null">
+                                                    <img alt="" width="100px" height="100px"
+                                                         :src="image5[index].picUrl" onclick="window.open(this.src,'_blank')">
+
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+
+                                <!--三家大企业合作合同-->
+                                <tr v-show="shopRecruitment.hasEarnest!=1">
+                                    <td>三家大企业合作合同</td>
+                                    <td>
+                                        <div id="files6" class="row">
+                                            <div v-for="(item, index) in image6">
+                                                <div class="col-sm-2 img-wrap" v-if="image6[index].picUrl != ''  && image6[index].picUrl != null">
+                                                    <img alt="" width="100px" height="100px"
+                                                         :src="image6[index].picUrl" onclick="window.open(this.src,'_blank')">
+
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>与派遣公司签署的协议</td>
+                                    <td>
+                                        <div id="files7" class="row">
+                                            <div v-for="(item, index) in image7">
+                                                <div class="col-sm-2 img-wrap" v-if="image7[index].picUrl != ''  && image7[index].picUrl != null">
+                                                    <img alt="" width="100px" height="100px"
+                                                         :src="image7[index].picUrl" onclick="window.open(this.src,'_blank')">
+
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!--办公场地租赁合同-->
+                                <tr v-show="shopRecruitment.hasEarnest!=1">
+                                    <td>办公场地租赁合同</td>
+                                    <td>
+                                        <div id="files8" class="row">
+                                            <div v-for="(item, index) in image8">
+                                                <div class="col-sm-2 img-wrap" v-if="image8[index].picUrl != ''  && image8[index].picUrl != null">
+                                                    <img alt="" width="100px" height="100px"
+                                                         :src="image8[index].picUrl" onclick="window.open(this.src,'_blank')">
+
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!--法人或负责人个人房产证-->
+                                <tr v-show="shopRecruitment.hasEarnest!=1">
+                                    <td>法人或负责人个人房产证</td>
+                                    <td>
+                                        <div id="files9" class="row">
+                                            <div v-for="(item, index) in image9">
+                                                <div class="col-sm-2 img-wrap" v-if="image9[index].picUrl != ''  && image9[index].picUrl != null">
+                                                    <img alt="" width="100px" height="100px"
+                                                         :src="image9[index].picUrl" onclick="window.open(this.src,'_blank')">
+
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+
+                                <!--参保人数社保局网站截图-->
+                                <tr v-show="shopRecruitment.hasEarnest!=1">
+                                    <td>参保人数社保局网站截图</td>
+                                    <td>
+                                        <div id="files10" class="row">
+                                            <div v-for="(item, index) in image10">
+                                                <div class="col-sm-2 img-wrap" v-if="image10[index].picUrl != ''  && image10[index].picUrl != null">
+                                                    <img alt="" width="100px" height="100px"
+                                                         :src="image10[index].picUrl" onclick="window.open(this.src,'_blank')">
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <br>
+                </div>
+
+                <div class="panel panel-default" v-show="addList">
+                    <div class="panel-body">
+                        <!--招聘信息-->
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <span>招聘信息</span>
+                            </div>
+                            <div class="panel-body">
+                                <br>
+
+                                <div class="row">
+                                    <div class="form-group col-sm-8">
+                                        <label class="col-sm-2 control-label">职位描述</label>
+                                        <div class="col-sm-10">
+                                            <el-textarea id="myEditor1" name="jobDescription"
+                                                         v-model="shopRecruitment.jobDescription"></el-textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group col-sm-8">
+                                        <label class="col-sm-2 control-label">招聘要求</label>
+                                        <div class="col-sm-10">
+                                            <el-textarea id="myEditor2" name="jobRequirement"
+                                                         v-model="shopRecruitment.jobRequirement"></el-textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group col-sm-8">
+                                        <label class="col-sm-2 control-label">薪资待遇</label>
+                                        <div class="col-sm-10">
+                                            <el-textarea id="myEditor3" name="jobResponsibilities"
+                                                         v-model="shopRecruitment.jobResponsibilities"></el-textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group col-sm-8">
+                                        <label class="col-sm-2 control-label">公司福利</label>
+                                        <div class="col-sm-10">
+                                            <el-textarea id="myEditor4" name="companyBenefits"
+                                                         v-model="shopRecruitment.companyBenefits"></el-textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-8">
+                                        <label class="col-sm-2 control-label">标签</label>
+                                        <div class="col-sm-10">
+                                            <laebl-gruop v-if="title=='新增'|| title=='修改'|| title=='上平台招聘'">
+                                                <label class="radio-inline" v-for="item in labels">
+                                                    <input name="configId" type="checkbox" :text="item.configValue"
+                                                           :value="item.configId">&nbsp;{{item.configValue}}
+                                                </label>
+                                            </laebl-gruop>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        <label class="col-sm-4 control-label">推荐岗位</label><!--推荐标记-->
+                                        <div class="col-sm-1">
+                                            <input type="radio" id="recommendFlag" name="recommendFlag"
+                                                   v-model="shopRecruitment.recommendFlag"
+                                                   value="1"
+                                                   onclick="if(this.c==1){this.c=0;this.checked=0}else this.c=1"/>
+                                            <!--再次点击 取消选中-->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        <label class="col-sm-4 control-label">灵活用工</label> <!--名企标志-->
+                                        <div class="col-sm-1">
+                                            <input type="radio" id="famousFlag" name="famousFlag"
+                                                   v-model="shopRecruitment.famousFlag"
+                                                   value="1"
+                                                   onclick="if(this.c==1){this.c=0;this.checked=0}else this.c=1"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--新增企业信息-->
+                                <div class="row">
+                                    <div class="form-group col-sm-8">
+                                        <label class="col-sm-2 control-label">企业信息&nbsp;&nbsp;</label>
+                                        <div class="col-sm-10">
+                                            <el-textarea id="myEditor5" name="enterpriseInfo"
+                                                         v-model="shopRecruitment.enterpriseInfo"></el-textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!---->
+                                <br>
+                            </div>
+                        </div>
+                        <!--返费信息-->
+
+                        <!--申请材料-->
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="feedbackModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 class="modal-title" id="myModalLabel">分配</h3>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal" id="feedbackForm" onkeydown="if(event.keyCode==13){return false;}">
+                        <div class="row">
+                            <div class="form-group required">
+                                <label class="col-sm-2 control-label">门店</label>
+                                <div class="col-sm-8">
+
+                                    <select class="form-control" id="appId" name="appId"
+                                            v-model="jobApplication.appId">
+                                        <option :value="item.id" v-for="item in categoryList">{{item.name}}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" @click="validateF">提交</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+
+</div>
+
+<script src="../../libs/jquery.min.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../libs/bootstrap.min.js"></script>
+<script src="../../libs/vue.min.js"></script>
+<!--bootstrap-table-->
+<script src="../../plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="../../plugins/bootstrap-table/locale/bootstrap-table-zh-CN.js"></script>
+<!--bootstrap-validator-->
+<script src="../../plugins/bootstrap-validator/js/bootstrap-validator.min.js"></script>
+<script src="../../plugins/bootstrap-validator/js/zh_CN.min.js"></script>
+
+<script src="../../plugins/bootstrap-select/js/bootstrap-select.js"></script>
+<script src="../../plugins/bootstrap-select/js/i18n/defaults-zh_CN.min.js"></script>
+
+<script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+<script src="../../js/common.js"></script>
+<script src="../../js/components.js"></script>
+
+
+<!-- 图片上传、富文本编辑器-->
+<script src="../../plugins/ueditor/ueditor.config.js"></script>
+<script src="../../plugins/ueditor/ueditor.all.js"></script>
+<script src="../../plugins/ueditor/ueditor.parse.js"></script>
+
+
+<script src="../../js/modules/auditDistribution/applicationAudit.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,55 @@
+server:
+    port: 8089
+spring:
+    datasource:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        druid:
+            first:  #数据源1
+                url: jdbc:mysql://122.112.206.46:3306/menkou?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8
+                username: menkou
+                password: fMd7iHCPmpiJm6P6
+            second:
+                url: jdbc:mysql://localhost:3306/power?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8
+                username: root
+                password: Wzlue@.2018
+            initial-size: 10
+            max-active: 100
+            min-idle: 10
+            max-wait: 60000
+            pool-prepared-statements: true
+            max-pool-prepared-statement-per-connection-size: 20
+            time-between-eviction-runs-millis: 60000
+            min-evictable-idle-time-millis: 300000
+            validation-query: SELECT 1 FROM DUAL
+            test-while-idle: true
+            test-on-borrow: false
+            test-on-return: false
+            stat-view-servlet:
+                enabled: true
+                url-pattern: /druid/*
+                #login-username: admin
+                #login-password: admin
+            filter:
+                stat:
+                    log-slow-sql: true
+                    slow-sql-millis: 1000
+                    merge-sql: true
+                wall:
+                    config:
+                        multi-statement-allow: true
+# 文件上传
+fileupload:
+    server: http://10.0.31.87:8089/fileupload
+    filepath: /home/file
+ueditor:
+    imageActionName: uploadimage
+    imageUrlPrefix: http://10.0.31.87:8089/fileupload
+    imagePath: /fileupload/
+    imageFieldName: upfile
+    imageMaxSize: 2048
+# 日志
+logback:
+    logdir: /home/wzlue-logs/wzlue-power-web  # 日志保存地址
+    appname: wzlue-app  #项目名
+    logCount: 10000 #日志阈值

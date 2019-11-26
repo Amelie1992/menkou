@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.wechat.dao.WxAppDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.wechat.entity.WxAppEntity" id="wxAppMap">
+        <result property="id" column="id"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="tenantId" column="tenant_id"/>
+        <result property="weixinSign" column="weixin_sign"/>
+        <result property="appType" column="app_type"/>
+        <result property="secret" column="secret"/>
+        <result property="token" column="token"/>
+        <result property="aesKey" column="aes_key"/>
+        <result property="name" column="name"/>
+        <result property="isComponent" column="is_component"/>
+        <result property="weixinType" column="weixin_type"/>
+        <result property="weixinHao" column="weixin_hao"/>
+        <result property="verifyType" column="verify_type"/>
+        <result property="logo" column="logo"/>
+        <result property="qrCode" column="qr_code"/>
+        <result property="principalName" column="principal_name"/>
+        <result property="community" column="community"/>
+        <result property="remarks" column="remarks"/>
+        <result property="vipCardId" column="vip_card_id"/>
+    </resultMap>
+    <sql id="likeSql">
+        <where>
+            <if test="appId != null">
+                AND id = #{appId}
+            </if>
+            <if test="name != null">
+                AND name like CONCAT('%',#{name},'%')
+            </if>
+            <if test="enabled != null">
+                AND enabled = #{enabled}
+            </if>
+            <if test="qualified != null">
+                AND qualified = #{qualified}
+            </if>
+
+            AND del_flag = 0
+        </where>
+    </sql>
+    <select id="queryObject" resultType="com.wzlue.wechat.entity.WxAppEntity">
+		SELECT * FROM wx_app WHERE id = #{value} AND del_flag = 0
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.wechat.entity.WxAppEntity">
+        SELECT * FROM wx_app
+
+        <include refid="likeSql"/>
+
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        SELECT count(*) FROM wx_app
+
+        <include refid="likeSql"/>
+    </select>
+    <select id="getById" resultType="com.wzlue.wechat.entity.WxAppEntity">
+		SELECT * FROM wx_app WHERE id = #{value}
+	</select>
+    <select id="findByWeixinSign" resultType="com.wzlue.wechat.entity.WxAppEntity">
+        SELECT *
+          FROM
+        wx_app
+        WHERE weixin_sign = #{weixinSign}
+    </select>
+    <sql id="appAll">
+        <where>
+            del_flag = 0
+            <if test="appId != null">
+                AND id = #{appId}
+            </if>
+        </where>
+    </sql>
+    <sql id="appEnable">
+        <where>
+            enabled = 0
+            AND del_flag = 0
+            AND (exp_type = 1 OR exp_date > now())
+            <if test="appId != null">
+                AND id = #{appId}
+            </if>
+
+        </where>
+    </sql>
+    <select id="selectlist" resultType="com.wzlue.wechat.entity.WxAppEntity">
+        SELECT id, name FROM wx_app
+        <choose>
+            <when test="enable == 'ALL'">
+                <include refid="appAll"/>
+            </when>
+            <otherwise>
+                <include refid="appEnable"/>
+            </otherwise>
+        </choose>
+    </select>
+    <select id="isQualified" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM wx_app
+        WHERE
+          qualified = 1 AND id = #{id}
+
+    </select>
+    <insert id="save" parameterType="com.wzlue.wechat.entity.WxAppEntity">
+		INSERT INTO wx_app
+		(
+		`id`, `create_id`, `create_date`, `update_id`, `update_date`, `del_flag`, `tenant_id`, `weixin_sign`, `app_type`, `secret`,
+        `token`, `aes_key`, `name`, `is_component`, `weixin_type`, `weixin_hao`, `verify_type`, `logo`, `qr_code`, `principal_name`,
+        `community`, `remarks`, `vip_card_id`, `state`, `exp_date`, `exp_type`, `qualified`, `head_logo`
+         )
+		VALUES
+		(
+		 #{id}, #{createId}, #{createDate}, #{updateId}, #{updateDate}, #{delFlag}, #{tenantId}, #{weixinSign}, #{appType}, #{secret},
+         #{token}, #{aesKey}, #{name}, #{isComponent}, #{weixinType}, #{weixinHao}, #{verifyType}, #{logo}, #{qrCode}, #{principalName},
+         #{community}, #{remarks}, #{vipCardId}, #{state}, #{expDate}, #{expType}, #{qualified}, #{headLogo}
+          )
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.wechat.entity.WxAppEntity">
+        UPDATE wx_app
+        <set>
+            <if test="createId != null">`create_id` = #{createId},</if>
+            <if test="createDate != null">`create_date` = #{createDate},</if>
+            <if test="updateId != null">`update_id` = #{updateId},</if>
+            <if test="updateDate != null">`update_date` = #{updateDate},</if>
+            <if test="delFlag != null">`del_flag` = #{delFlag},</if>
+            <if test="tenantId != null">`tenant_id` = #{tenantId},</if>
+            <if test="weixinSign != null">`weixin_sign` = #{weixinSign},</if>
+            <if test="appType != null">`app_type` = #{appType},</if>
+            <if test="secret != null">`secret` = #{secret},</if>
+            <if test="token != null">`token` = #{token},</if>
+            <if test="aesKey != null">`aes_key` = #{aesKey},</if>
+            <if test="name != null">`name` = #{name},</if>
+            <if test="isComponent != null">`is_component` = #{isComponent},</if>
+            <if test="weixinType != null">`weixin_type` = #{weixinType},</if>
+            <if test="weixinHao != null">`weixin_hao` = #{weixinHao},</if>
+            <if test="verifyType != null">`verify_type` = #{verifyType},</if>
+            <if test="logo != null">`logo` = #{logo},</if>
+            <if test="qrCode != null">`qr_code` = #{qrCode},</if>
+            <if test="principalName != null">`principal_name` = #{principalName},</if>
+            <if test="community != null">`community` = #{community},</if>
+            <if test="remarks != null">`remarks` = #{remarks},</if>
+            <if test="vipCardId != null">`vip_card_id` = #{vipCardId},</if>
+            <if test="state != null">`vip_card_id` = #{state},</if>
+            <if test="expDate != null">`exp_date` = #{expDate},</if>
+            <if test="expType != null">`exp_type` = #{expType},</if>
+            <if test="qualified != null">`qualified` = #{qualified},</if>
+            <if test="headLogo != null">`head_logo` = #{headLogo},</if>
+            <if test="enabled != null">`enabled` = #{enabled},</if>
+            <if test="description != null">`description` = #{description}</if>
+
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM wx_app WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        UPDATE wx_app
+        SET del_flag = 1
+        WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getListByAppIds" resultType="com.wzlue.wechat.entity.WxAppEntity">
+        SELECT * FROM wx_app
+        WHERE id in
+        (
+        <foreach collection="array" item="item" separator=",">
+            #{item}
+        </foreach>
+        );
+
+    </select>
+    <select id="selectlistNotApp" resultType="com.wzlue.wechat.entity.WxAppEntity">
+        SELECT
+        id,name
+        FROM
+        wx_app t
+        WHERE
+        NOT EXISTS (SELECT 1 FROM  sys_user a WHERE a.app_id = t.id )
+        AND enabled = 0
+        AND del_flag = 0
+        AND (exp_type = 1 OR exp_date > now())
+    </select>
+
+</mapper>

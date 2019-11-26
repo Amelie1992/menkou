@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CKEditorDemo</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/AdminLTE.min.css">
+    <link rel="stylesheet" href="../../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../plugins/bootstrap-table/bootstrap-table.min.css">
+    <link rel="stylesheet" href="../../plugins/bootstrap-validator/css/bootstrap-validator.min.css">
+    <link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+    <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <script src="../../libs/jquery.min.js"></script>
+    <script src="../../plugins/layer/layer.js"></script>
+    <script src="../../libs/bootstrap.min.js"></script>
+    <script src="../../libs/vue.min.js"></script>
+    <script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+    <script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+    <script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+    <script src="../../js/common.js"></script>
+</head>
+<body>
+<div id="rrapp">
+    <section class="content-header">
+        <h1>CKEditor  <small>富文本工具</small></h1>
+    </section>
+
+    <section class="content">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="hero-unit">
+                    <h2>CKEditor  <small>富文本工具</small></h2>
+                    <p>step1: 引入js: ckeditor.js</p>
+
+                    <p> step2: 定义一个 textarea,并声明name</p>
+                    <textarea name="ckeditor"></textarea>
+
+                    <p> step3: 使用 CKEDITOR.replace() 方式初始化富文本</p>
+                    <p>
+                        "var editor = CKEDITOR.replace('ckeditor',{language: 'zh-CN',//改成中文版})"
+                    </p>
+
+                    <p> 使用 editor.setData() editor.getData() 操作富文本内容;</p>
+                    <p>
+                        注* : CKEDITOR的图片上传问题 修改 config.js文件
+                        config.filebrowserImageUploadUrl = "/group/app/file/ckeditorUpload"; 添加上传图片路径 //为后台上传方法路径;<br/>
+
+                        后台方法需要注意:<br/>
+                        通过以下方式拼接标签返回路径:<br/>
+                        StringBuffer sb=new StringBuffer();<br/>
+                        sb.append(\"script type=\"text/javascript\">\");<br/>
+                        sb.append("");<br/>
+                        sb.append(\"/script\");
+                    </p>
+                </div>
+            </div>
+        </div>
+        <table id="table"></table>
+    </section>
+</div>
+
+<script src="../../libs/jquery.min.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../libs/bootstrap.min.js"></script>
+<script src="../../libs/vue.min.js"></script>
+<!--bootstrap-table-->
+<script src="../../plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="../../plugins/bootstrap-table/locale/bootstrap-table-zh-CN.js"></script>
+<!--bootstrap-validator-->
+<script src="../../plugins/bootstrap-validator/js/bootstrap-validator.min.js"></script>
+<script src="../../plugins/bootstrap-validator/js/zh_CN.min.js"></script>
+<script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+<!--//CKEDITOR  -->
+<script src="../../plugins/ckeditor/ckeditor.js"></script>
+<script src="../../js/common.js"></script>
+
+<script src="../../js/modules/generator/generator.js"></script>
+<script type="text/javascript">
+    var editor = CKEDITOR.replace('ckeditor',{
+        language: 'zh-CN',
+    })
+</script>
+
+</body>
+</html>

@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.store.dao.TStoreGloryDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.store.entity.TStoreGloryEntity" id="tStoreGloryMap">
+        <result property="gloryId" column="glory_id"/>
+        <result property="gloryTitle" column="glory_title"/>
+        <result property="gloryContent" column="glory_content"/>
+        <result property="glorySort" column="glory_sort"/>
+        <result property="appId" column="app_id"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+
+        <result property="wname" column="w_name"/>
+        <result property="rownum" column="rownum"/>
+
+
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.store.entity.TStoreGloryEntity">
+		SELECT
+		 a.glory_id,
+        a.glory_title,
+        a.glory_content,
+        a.glory_sort,
+        a.app_id,
+        a.create_id,
+        a.create_date,
+        a.update_id,
+        a.update_date,
+        b.name wname
+		 FROM t_store_glory  a
+
+		 left join wx_app b on a.app_id = b.id AND b.del_flag = 0
+		 WHERE glory_id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.store.entity.TStoreGloryEntity">
+        SELECT
+        a.glory_id,
+        a.glory_title,
+        a.glory_content,
+        a.glory_sort,
+        a.app_id,
+        a.create_id,
+        a.create_date,
+        a.update_id,
+        a.update_date,
+        b.name wname
+        FROM t_store_glory a
+        left join wx_app b on a.app_id = b.id AND b.del_flag = 0
+
+        <where>
+
+            <if test="gloryTitle != null and gloryTitle.trim() != ''">
+                a.glory_title like CONCAT('%',#{gloryTitle},'%')
+            </if>
+
+        </where>
+
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY glory_id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        SELECT count(*) FROM t_store_glory
+        <where>
+
+            <if test="gloryTitle != null and gloryTitle.trim() != ''">
+                glory_title like CONCAT('%',#{gloryTitle},'%')
+            </if>
+
+        </where>
+    </select>
+
+
+    <sql id="sort_before">
+        set @rownum=0;
+        SELECT
+        @rownum:=@rownum+1 as rownum,x.* from
+        (
+
+    </sql>
+    <sql id="sort_after">
+        ) x
+    </sql>
+    <sql id="selectGloryListVo">
+        select
+        a.glory_id,
+        a.glory_title,
+        a.glory_content,
+        a.glory_sort,
+        a.app_id,
+        a.create_id,
+        a.create_date,
+        a.update_id,
+        a.update_date,
+        b.name As w_name
+        FROM t_store_glory a
+        left join wx_app b on a.app_id = b.id AND b.del_flag = 0
+    </sql>
+
+    <select id="queryListByParam" resultMap="tStoreGloryMap">
+        <include refid="selectGloryListVo"/>
+        <where>
+            <if test="gloryTitle != null and gloryTitle.trim() != ''">
+                AND a.glory_title like CONCAT('%',#{gloryTitle},'%')
+            </if>
+            <if test="appId != null and appId.trim() != ''">
+                AND b.id = #{appId}
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.glory_sort ASC
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotalByParam" resultType="int">
+        SELECT
+        count(*)
+        FROM t_store_glory a
+        left join wx_app b on a.app_id = b.id AND b.del_flag = 0
+
+        <where>
+
+
+            <if test="gloryTitle != null and gloryTitle.trim() != ''">
+                AND a.glory_title like CONCAT('%',#{gloryTitle},'%')
+            </if>
+            <if test="appId != null and appId.trim() != ''">
+                AND b.id = #{appId}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryListAll" resultMap="tStoreGloryMap">
+        <include refid="sort_before"/>
+        <include refid="selectGloryListVo"/>
+        <where>
+            <if test="gloryTitle != null and gloryTitle.trim() != ''">
+                AND a.glory_title like CONCAT('%',#{gloryTitle},'%')
+            </if>
+            <if test="appId != null and appId.trim() != ''">
+                AND b.id = #{appId}
+            </if>
+        </where>
+        ORDER BY a.glory_sort ASC
+        <include refid="sort_after"/>
+    </select>
+
+    <select id="queryListByIds" resultMap="tStoreGloryMap">
+        <include refid="sort_before"/>
+        <include refid="selectGloryListVo"/>
+        <where>
+            a.glory_id in
+            <foreach item="gloryId" collection="array" open="(" separator="," close=")">
+                #{gloryId}
+            </foreach>
+        </where>
+        ORDER BY a.glory_sort ASC
+        <include refid="sort_after"/>
+    </select>
+
+
+
+
+
+    <insert id="save" parameterType="com.wzlue.store.entity.TStoreGloryEntity" useGeneratedKeys="true"
+            keyProperty="gloryId">
+		INSERT INTO t_store_glory
+		(
+																				`glory_title`, 
+																	`glory_content`, 
+																	`glory_sort`, 
+																	`app_id`, 
+																	`create_id`, 
+																	`create_date`, 
+																	`update_id`, 
+																	`update_date`
+									)
+		VALUES
+		(
+																				#{gloryTitle}, 
+																	#{gloryContent}, 
+																	#{glorySort}, 
+																	#{appId}, 
+																	#{createId}, 
+																	#{createDate}, 
+																	#{updateId}, 
+																	#{updateDate}
+									)
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.store.entity.TStoreGloryEntity">
+        UPDATE t_store_glory
+        <set>
+            <if test="gloryTitle != null">`glory_title` = #{gloryTitle},</if>
+            <if test="gloryContent != null">`glory_content` = #{gloryContent},</if>
+            <if test="glorySort != null">`glory_sort` = #{glorySort},</if>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="createId != null">`create_id` = #{createId},</if>
+            <if test="createDate != null">`create_date` = #{createDate},</if>
+            <if test="updateId != null">`update_id` = #{updateId},</if>
+            <if test="updateDate != null">`update_date` = #{updateDate}</if>
+        </set>
+        WHERE glory_id = #{gloryId}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM t_store_glory WHERE glory_id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM t_store_glory WHERE glory_id IN
+        <foreach item="gloryId" collection="array" open="(" separator="," close=")">
+            #{gloryId}
+        </foreach>
+    </delete>
+
+</mapper>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.wechat.dao.BalanceRecordDao">
+
+    <select id="queryByUserId" resultType="com.wzlue.wechat.entity.BalanceRecordEntity">
+        SELECT *
+        FROM t_user_balance_record
+        WHERE
+        ORDER BY create_date DESC
+          user_id = #{userId}
+        <if test="query.offset != null and query.limit != null">
+            LIMIT #{query.offset}, #{query.limit}
+        </if>
+    </select>
+
+    <insert id="save" parameterType="com.wzlue.wechat.entity.BalanceRecordEntity">
+        INSERT INTO t_user_balance_record
+        VALUES (null,
+                #{userId},
+                #{amount,jdbcType=DECIMAL},
+                #{type},
+                #{createBy},
+                #{createDate},
+                #{updateBy},
+                #{updateDate}
+                )
+    </insert>
+
+</mapper>

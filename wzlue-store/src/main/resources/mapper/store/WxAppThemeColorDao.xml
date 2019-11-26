@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.store.dao.WxAppThemeColorDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.store.entity.WxAppThemeColorEntity" id="wxAppThemeColorMap">
+        <result property="appId" column="app_id"/>
+        <result property="backcolor" column="backcolor"/>
+        <result property="buttonColor" column="button_color"/>
+        <result property="form" column="form"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+	<select id="queryObject" resultType="com.wzlue.store.entity.WxAppThemeColorEntity">
+		SELECT * FROM wx_app_theme_color WHERE app_id = #{value}
+	</select>
+
+	<select id="queryList" resultType="com.wzlue.store.entity.WxAppThemeColorEntity">
+		SELECT
+		a.* ,
+		b.name As appname
+		FROM wx_app_theme_color a
+		left join wx_app b on a.app_id = b.id AND b.del_flag = 0
+		<where>
+			1=1
+			<if test="appId != null and appId != ''">
+				and a.app_id = #{appId}
+			</if>
+		</where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+			<otherwise>
+                ORDER BY app_id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			LIMIT #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		SELECT count(*) FROM wx_app_theme_color a
+		left join wx_app b on a.app_id = b.id AND b.del_flag = 0
+		<where>
+			1=1
+			<if test="appId != null and appId != ''">
+				AND a.app_id = #{appId}
+			</if>
+		</where>
+	</select>
+	 
+	<insert id="save" parameterType="com.wzlue.store.entity.WxAppThemeColorEntity">
+		INSERT INTO wx_app_theme_color
+		(
+													`app_id`, 
+																	`backcolor`, 
+																	`button_color`, 
+																	`form`, 
+																	`create_time`, 
+																	`update_time`
+									)
+		VALUES
+		(
+													#{appId}, 
+																	#{backcolor}, 
+																	#{buttonColor}, 
+																	#{form}, 
+																	now(),
+																	#{updateTime}
+									)
+	</insert>
+	 
+	<update id="update" parameterType="com.wzlue.store.entity.WxAppThemeColorEntity">
+		UPDATE wx_app_theme_color
+		<set>
+																				<if test="backcolor != null">`backcolor` = #{backcolor}, </if>
+																	<if test="buttonColor != null">`button_color` = #{buttonColor}, </if>
+																	<if test="form != null">`form` = #{form}, </if>
+																	<if test="createTime != null">`create_time` = #{createTime}, </if>
+																	<if test="updateTime != null">`update_time` = #{updateTime}</if>
+									</set>
+		WHERE app_id = #{appId}
+	</update>
+	
+	<delete id="delete">
+		DELETE FROM wx_app_theme_color WHERE app_id = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		DELETE FROM wx_app_theme_color WHERE app_id IN
+		<foreach item="appId" collection="array" open="(" separator="," close=")">
+			#{appId}
+		</foreach>
+	</delete>
+
+</mapper>

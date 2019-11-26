@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>供人信息</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/AdminLTE.min.css">
+    <link rel="stylesheet" href="../../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+    <link rel="stylesheet" href="../../css/bootstrap-table.min.css">
+    <link rel="stylesheet" href="../../plugins/bootstrap-validator/css/bootstrap-validator.min.css">
+    <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../plugins/treegrid/jquery.treegrid.css">
+    <!--日期时间插件-->
+    <link rel="stylesheet" href="../../plugins/datetimepicker/css/bootstrap-datetimepicker.min.css">
+    <!--可搜索下拉css-->
+    <link href="../../plugins/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet"/>
+
+</head>
+<body>
+<div id="rrapp" v-cloak class="content-wrapper wzl-content-wrapper">
+    <section class="content-header">
+        <h1>
+            供人信息 &nbsp;<small v-if="title!=''">{{title}}</small>
+        </h1>
+    </section>
+    <div v-show="showList">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <div class="box-header with-border">
+                            <div class="col-xs-2">
+                                <input type="text" class="form-control" v-model="params.title" name="title"
+                                       @keyup.enter="query" placeholder="招聘标题" maxlength="30"/>
+                            </div>
+                            <div class="col-xs-2"  v-if="user_Store == 0">
+                                <select id="appIdParam" class="form-control selectpicker"
+                                        data-live-search="true"></select>
+                            </div>
+                            <div class="col-xs-2">
+                                <select class="form-control" name="status" v-model="params.state">
+                                    <option value="">状态</option>
+                                    <option value="1">待审核</option>
+                                    <option value="2">通过</option>
+                                    <option value="3">拒绝</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" @click="query"><i class="fa fa-search"></i>&nbsp;查询</button>
+                            <button class="btn btn-warning" @click="reset">
+                                <i class="fa fa-trash-o"></i>&nbsp;重置
+                            </button>
+                            <!--<button v-if="hasPermission('provideStaff:providestaff:update')" class="btn btn-warning" @click="update">-->
+                            <!--<i class="fa fa-trash-o"></i>&nbsp;修改-->
+                            <!--</button>-->
+                        </div>
+                        <div class="box-header with-border">
+                            <div class="col-xs-3">
+                                <div class="col-sm-4 control-label" style="height: 35px;line-height: 35px;padding-right: 0px;">开始时间：</div>
+                                <div class="col-sm-7">
+                                    <input type="text" class="form-control datetimepicker" id="beginTime"
+                                           data-date-format="yyyy-mm-dd hh:mm:ss" v-model="params.beginTime"/>
+                                </div>
+                            </div>
+                            <div class="col-xs-3">
+                                <div class="col-sm-4 control-label" style="height: 35px;line-height: 35px;padding-right: 0px;">结束时间：</div>
+                                <div class="col-sm-7">
+                                    <input type="text" class="form-control datetimepicker" id="endTime"
+                                           data-date-format="yyyy-mm-dd hh:mm:ss" v-model="params.endTime"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <div class="table-responsive">
+                                <table id="table"></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!--我的供人 详情-->
+    <div v-show="detailList" style="margin-top: 20px">
+        <form class="form form-horizontal" id="provideStaffForm" onkeydown="if(event.keyCode==13){return false;}">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <span>供人信息</span>
+                        </div>
+                        <div class="panel-body">
+                            <br>
+                            <div class="row">
+                                <div class="form-group col-sm-4 required">
+                                    <label class="col-sm-4 control-label">人数</label>
+                                    <div class="col-sm-8">
+                                        <div class="input-group">
+                                            <input type="text" name="number" class="form-control" disabled
+                                                   v-model="provideStaff.number" placeholder="供人人数"/>
+                                            <div class="input-group-addon" style="width: 42%; background-color: whitesmoke;">人</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group col-sm-4 required">
+                                    <label class="col-sm-4 control-label">年龄段</label>
+                                    <div class="col-sm-3" style="width: 29%">
+                                        <input type="text" name="minAge" class="form-control" disabled
+                                               v-model="provideStaff.minAge" placeholder="最小年龄"/>
+                                    </div>
+                                    <div class="col-sm-1">一</div>
+                                    <div class="col-sm-3" style="width: 29%">
+                                        <input type="text" name="maxAge" class="form-control" disabled
+                                               v-model="provideStaff.maxAge" placeholder="最大年龄"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group col-sm-4 required">
+                                    <label class="col-sm-4 control-label">人员类型</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-control" data-width="auto" v-model="provideStaff.type" disabled>
+                                            <option value="1">社会</option>
+                                            <option value="2">学生</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group col-sm-4 required">
+                                    <label class="col-sm-4 control-label">到岗时间</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="arrivalTime" class="form-control" disabled
+                                               v-model="provideStaff.arrivalTime" placeholder="到岗时间"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group col-sm-4 required">
+                                    <label class="col-sm-4 control-label">联系人</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="contacts" class="form-control" disabled
+                                               v-model="provideStaff.contacts" placeholder="联系人"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group col-sm-4 required">
+                                    <label class="col-sm-4 control-label">联系方式</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="phone" class="form-control" disabled
+                                               v-model="provideStaff.phone" placeholder="联系方式"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group col-sm-4 required">
+                                    <label class="col-sm-4 control-label">所在地点</label>
+                                    <div class="col-sm-4">
+                                        <input type="text" class="form-control" v-model="provideStaff.provinceStr" disabled/>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <input type="text" class="form-control" v-model="provideStaff.cityStr" disabled/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group col-sm-8">
+                                    <label class="col-sm-2 control-label">备注</label>
+                                    <div class="col-sm-10">
+                                        <textarea name="remarks" class="form-control" rows="5"
+                                                  v-model="provideStaff.remarks" placeholder="备注" disabled></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group col-sm-4 required">
+                                    <label class="col-sm-4 control-label">状态</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-control" data-width="auto" v-model="provideStaff.state" disabled>
+                                            <option value="1">待审核</option>
+                                            <option value="2">通过</option>
+                                            <option value="3">拒绝</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group col-sm-8">
+                                    <label class="col-sm-2 control-label">审核意见</label>
+                                    <div class="col-sm-10">
+                                        <textarea class="form-control" rows="5" v-model="provideStaff.msg" disabled></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-footer" style="text-align: left;">
+                    <!--<input type="button" class="btn btn-primary" value="确定" @click="validateProvide"/>-->
+                    &nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload" value="返回"/>
+                </div>
+            </div>
+        </form>
+    </div>
+
+
+</div>
+
+<script src="../../libs/jquery.min.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../libs/bootstrap.min.js"></script>
+<script src="../../libs/vue.min.js"></script>
+<!--bootstrap-table-->
+<script src="../../plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="../../plugins/bootstrap-table/locale/bootstrap-table-zh-CN.js"></script>
+<!--bootstrap-validator-->
+<script src="../../plugins/bootstrap-validator/js/bootstrap-validator.min.js"></script>
+<script src="../../plugins/bootstrap-validator/js/zh_CN.min.js"></script>
+<script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+<script src="../../js/common.js"></script>
+<!--日期时间-->
+<script src="../../plugins/datetimepicker/js/bootstrap-datetimepicker.js"></script>
+<script src="../../plugins/datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js"></script>
+<!--可搜索下拉js-->
+<script src="../../plugins/bootstrap-select/js/bootstrap-select.js"></script>
+<script src="../../plugins/bootstrap-select/js/i18n/defaults-zh_CN.min.js"></script>
+
+<script src="../../js/modules/myProvide/providestaff.js"></script>
+<script>
+    $(".datetimepicker").datetimepicker({
+        language: 'zh-CN',
+        format: 'yyyy-mm-dd hh:mm:ss',//显示格式
+        weekStart: 1,
+        todayHighlight: 1,//今天高亮
+        minView: 'month',//设置只显示到月份
+        startView: 2,
+        //startDate: new Date(),//设置开始日期
+        forceParse: 0,
+        showMeridian: 1,
+        autoclose: true//选择后自动关闭
+    });
+
+    $(function () {
+        $(window).on('load', function () {
+            $('.selectpicker').selectpicker('val', '');
+            $('.selectpicker').selectpicker('refresh');
+        });
+
+        //下拉数据加载
+        $.ajax({
+            type: 'get',
+            url: baseURL + "wechat/wxapp/selectAll",
+            dataType: 'json',
+            success: function (datas) {//返回list数据并循环获取
+                var wxlist = datas.wxAppList;
+                var select = $("#appIdParam");
+                select.append("<option value=''>全部门店</option>");
+                for (var i = 0; i < wxlist.length; i++) {
+                    select.append("<option value='" + wxlist[i].id + "'>" + wxlist[i].name + "</option>");
+                }
+                $('.selectpicker').selectpicker('val', '');
+                $('.selectpicker').selectpicker('refresh');
+            }
+        });
+
+        $("#appIdParam").change('shown.bs.select', function (e) {
+            vm.params.appId = $("#appIdParam").val();
+        })
+    });
+</script>
+</body>
+</html>

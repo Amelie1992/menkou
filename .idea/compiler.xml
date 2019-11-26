@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="wzlue-app" />
+        <module name="wzlue-common" />
+        <module name="wzlue-doorway" />
+        <module name="wzlue-draw" />
+        <module name="wzlue-generator" />
+        <module name="wzlue-jobApplication" />
+        <module name="wzlue-notice" />
+        <module name="wzlue-provideStaff" />
+        <module name="wzlue-qrcode" />
+        <module name="wzlue-recruitment" />
+        <module name="wzlue-schedule" />
+        <module name="wzlue-smsCode" />
+        <module name="wzlue-store" />
+        <module name="wzlue-sys" />
+        <module name="wzlue-web" />
+        <module name="wzlue-wechat" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="wzlue-app" target="1.8" />
+      <module name="wzlue-common" target="1.8" />
+      <module name="wzlue-doorway" target="1.8" />
+      <module name="wzlue-draw" target="1.8" />
+      <module name="wzlue-generator" target="1.8" />
+      <module name="wzlue-jobApplication" target="1.8" />
+      <module name="wzlue-menkou" target="1.8" />
+      <module name="wzlue-notice" target="1.8" />
+      <module name="wzlue-provideStaff" target="1.8" />
+      <module name="wzlue-qrcode" target="1.8" />
+      <module name="wzlue-recruitment" target="1.8" />
+      <module name="wzlue-schedule" target="1.8" />
+      <module name="wzlue-smsCode" target="1.8" />
+      <module name="wzlue-store" target="1.8" />
+      <module name="wzlue-sys" target="1.8" />
+      <module name="wzlue-web" target="1.8" />
+      <module name="wzlue-wechat" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

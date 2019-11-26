@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.wechat.dao.WxUserDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.wechat.entity.WxUserEntity" id="wxUserMap">
+        <result property="id" column="id"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+        <result property="remark" column="remark"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="tenantId" column="tenant_id"/>
+        <result property="appId" column="app_id"/>
+        <result property="appType" column="app_type"/>
+        <result property="subscribe" column="subscribe"/>
+        <result property="subscribeScene" column="subscribe_scene"/>
+        <result property="subscribeTime" column="subscribe_time"/>
+        <result property="subscribeNum" column="subscribe_num"/>
+        <result property="cancelSubscribeTime" column="cancel_subscribe_time"/>
+        <result property="openId" column="open_id"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="sex" column="sex"/>
+        <result property="city" column="city"/>
+        <result property="country" column="country"/>
+        <result property="province" column="province"/>
+        <result property="phone" column="phone"/>
+        <result property="language" column="language"/>
+        <result property="headimgUrl" column="headimg_url"/>
+        <result property="unionId" column="union_id"/>
+        <result property="groupId" column="group_id"/>
+        <result property="tagidList" column="tagid_list" typeHandler="com.wzlue.common.mybatis.handler.ArrayLongTypeHandler" jdbcType="VARCHAR"/>
+        <result property="qrSceneStr" column="qr_scene_str"/>
+        <result property="latitude" column="latitude"/>
+        <result property="longitude" column="longitude"/>
+        <result property="precision" column="precision"/>
+        <result property="sessionKey" column="session_key"/>
+        <result property="bonus" column="bonus"/>
+        <result property="sceneId" column="scene_id"/>
+    </resultMap>
+
+    <sql id="likeSql">
+        <where>
+            <if test="tagid_list != null">
+                AND tagid_list = #{tagidList}
+            </if>
+            <if test="nickName != null">
+                AND nick_name LIKE CONCAT('%',#{nickName},'%')
+            </if>
+            AND app_id = #{appId}
+        </where>
+    </sql>
+
+    <select id="queryObject" resultType="com.wzlue.wechat.entity.WxUserEntity">
+		SELECT * FROM wx_user WHERE id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.wechat.entity.WxUserEntity">
+        SELECT * FROM wx_user
+
+        <include refid="likeSql"/>
+
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        SELECT count(*) FROM wx_user
+
+        <include refid="likeSql"/>
+    </select>
+    <select id="getByAppIdOpenId" resultType="com.wzlue.wechat.entity.WxUserEntity">
+        SELECT *
+          FROM
+          wx_user
+        WHERE
+        app_id = #{appId}
+        AND open_id = #{openId}
+
+    </select>
+    <select id="queryByOpenid" resultType="com.wzlue.wechat.entity.WxUserEntity">
+        SELECT *
+        FROM
+        wx_user
+        WHERE
+        open_id = #{value}
+    </select>
+    <select id="getById" resultType="com.wzlue.wechat.entity.WxUserEntity">
+        SELECT
+          id, nick_name, phone, headimg_url, we_chat, integral
+        FROM
+          wx_user
+        WHERE
+          id = #{id}
+    </select>
+
+    <insert id="save" parameterType="com.wzlue.wechat.entity.WxUserEntity">
+		INSERT INTO wx_user
+		(
+		`id`, `create_id`, `create_date`, `update_id`, `update_date`, `remark`, `del_flag`, `tenant_id`, `app_id`,
+        `app_type`, `subscribe`, `subscribe_scene`, `subscribe_time`, `subscribe_num`, `cancel_subscribe_time`, `open_id`,
+        `nick_name`, `sex`, `city`, `country`, `province`, `phone`, `language`, `headimg_url`, `union_id`, `group_id`,
+        `tagid_list`, `qr_scene_str`, `latitude`, `longitude`, `precision`, `session_key`,`scene_id`
+		)
+		VALUES
+		(
+          #{id}, #{createId}, #{createDate}, #{updateId}, #{updateDate}, #{remark}, #{delFlag}, #{tenantId}, #{appId},
+          #{appType}, #{subscribe}, #{subscribeScene}, #{subscribeTime}, #{subscribeNum}, #{cancelSubscribeTime}, #{openId},
+          #{nickName}, #{sex}, #{city}, #{country}, #{province}, #{phone}, #{language}, #{headimgUrl}, #{unionId}, #{groupId},
+          #{tagidList}, #{qrSceneStr}, #{latitude}, #{longitude}, #{precision}, #{sessionKey},#{sceneId}
+        )
+	</insert>
+    <insert id="saveOrUpdateBatch">
+        INSERT INTO wx_user
+        (
+        `id`,`create_id`, `create_date`, `update_id`, `update_date`, `remark`, `del_flag`, `tenant_id`, `app_id`,
+        `app_type`, `subscribe`, `subscribe_scene`, `subscribe_time`, `subscribe_num`, `cancel_subscribe_time`, `open_id`,
+        `nick_name`, `sex`, `city`, `country`, `province`, `phone`, `language`, `headimg_url`, `union_id`, `group_id`,
+        `tagid_list`, `qr_scene_str`, `latitude`, `longitude`, `precision`, `session_key`,`scene_id`
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.id},#{item.createId}, #{item.createDate}, #{item.updateId}, #{item.updateDate}, #{item.remark}, #{item.delFlag}, #{item.tenantId}, #{item.appId},
+            #{item.appType}, #{item.subscribe}, #{item.subscribeScene}, #{item.subscribeTime}, #{item.subscribeNum}, #{item.cancelSubscribeTime}, #{item.openId},
+            #{item.nickName}, #{item.sex}, #{item.city}, #{item.country}, #{item.province}, #{item.phone}, #{item.language}, #{item.headimgUrl}, #{item.unionId}, #{item.groupId},
+            #{item.tagidList}, #{item.qrSceneStr}, #{item.latitude}, #{item.longitude}, #{item.precision}, #{item.sessionKey},#{item.sceneId}
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        app_id = VALUES(app_id), app_type = VALUES(app_type), subscribe = VALUES(subscribe), subscribe_scene = VALUES(subscribe_scene),
+        subscribe_time = VALUES(subscribe_time), open_id = VALUES(open_id), nick_name = VALUES(nick_name), sex = VALUES(sex),
+        city = VALUES(city), country = VALUES(country), province = VALUES(province),language = VALUES(language),headimg_url = VALUES(headimg_url),
+        union_id = VALUES(union_id), group_id = VALUES(group_id), tagid_list = VALUES(tagid_list), qr_scene_str = VALUES(qr_scene_str),
+        update_id = VALUES(update_id), update_date = VALUES(update_date)
+    </insert>
+
+    <update id="update" parameterType="com.wzlue.wechat.entity.WxUserEntity">
+        UPDATE wx_user
+        <set>
+            <if test="createId != null">`create_id` = #{createId},</if>
+            <if test="createDate != null">`create_date` = #{createDate},</if>
+            <if test="updateId != null">`update_id` = #{updateId},</if>
+            <if test="updateDate != null">`update_date` = #{updateDate},</if>
+            <if test="remark != null">`remark` = #{remark},</if>
+            <if test="delFlag != null">`del_flag` = #{delFlag},</if>
+            <if test="tenantId != null">`tenant_id` = #{tenantId},</if>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="appType != null">`app_type` = #{appType},</if>
+            <if test="subscribe != null">`subscribe` = #{subscribe},</if>
+            <if test="subscribeScene != null">`subscribe_scene` = #{subscribeScene},</if>
+            <if test="subscribeTime != null">`subscribe_time` = #{subscribeTime},</if>
+            <if test="subscribeNum != null">`subscribe_num` = #{subscribeNum},</if>
+            <if test="cancelSubscribeTime != null">`cancel_subscribe_time` = #{cancelSubscribeTime},</if>
+            <if test="openId != null">`open_id` = #{openId},</if>
+            <if test="nickName != null">`nick_name` = #{nickName},</if>
+            <if test="sex != null">`sex` = #{sex},</if>
+            <if test="city != null">`city` = #{city},</if>
+            <if test="country != null">`country` = #{country},</if>
+            <if test="province != null">`province` = #{province},</if>
+            <if test="phone != null">`phone` = #{phone},</if>
+            <if test="language != null">`language` = #{language},</if>
+            <if test="headimgUrl != null">`headimg_url` = #{headimgUrl},</if>
+            <if test="unionId != null">`union_id` = #{unionId},</if>
+            <if test="groupId != null">`group_id` = #{groupId},</if>
+            <if test="tagidList != null">`tagid_list` = #{tagidList},</if>
+            <if test="qrSceneStr != null">`qr_scene_str` = #{qrSceneStr},</if>
+            <if test="latitude != null">`latitude` = #{latitude},</if>
+            <if test="longitude != null">`longitude` = #{longitude},</if>
+            <if test="precision != null">`precision` = #{precision},</if>
+            <if test="sessionKey != null">`session_key` = #{sessionKey},</if>
+            <if test="weChat != null">`we_chat` = #{weChat},</if>
+            <if test="bonus != null">`bonus` = #{bonus}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateByAppidSub">
+        UPDATE  wx_user
+        set subscribe = #{wxUser.subscribe}
+        WHERE app_id = #{appId} AND subscribe = #{subscribe}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM wx_user WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM wx_user WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

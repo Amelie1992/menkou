@@ -1,0 +1,4 @@
+com\wzlue\qrcode\dao\WxAppQrCodeDao.class
+com\wzlue\qrcode\entity\WxAppQrCodeEntity.class
+com\wzlue\qrcode\service\impl\WxAppQrCodeServiceImpl.class
+com\wzlue\qrcode\service\WxAppQrCodeService.class

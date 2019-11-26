@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.smsCode.dao.SmsCodeDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.smsCode.entity.SmsCodeEntity" id="smsCodeMap">
+        <result property="id" column="id"/>
+        <result property="openid" column="openid"/>
+        <result property="mobile" column="mobile"/>
+        <result property="code" column="code"/>
+        <result property="createTime" column="create_time"/>
+        <result property="effectiveTime" column="effective_time"/>
+        <result property="expirationTime" column="expiration_time"/>
+        <result property="count" column="count"/>
+        <result property="state" column="state"/>
+        <result property="intervalTime" column="interval_time"/>
+        <result property="permissibleRequestTime" column="permissible_request_time"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.smsCode.entity.SmsCodeEntity">
+		SELECT * FROM sms_code WHERE id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.smsCode.entity.SmsCodeEntity">
+        SELECT * FROM sms_code
+        <where>
+            1=1
+            <if test="openid!=null and openid!=''">
+                and openid = #{openid}
+            </if>
+            <if test="mobile!=null and mobile!=''">
+                and mobile = #{mobile}
+            </if>
+            <if test="today!=null and today!=''">
+                and TO_DAYS(createTime) = TO_DAYS(NOW())
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${odrer}
+            </when>
+            <otherwise>
+                ORDER BY id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        SELECT count(*) FROM sms_code
+        <where>
+            1=1
+            <if test="openid!=null and openid!=''">
+                and openid = #{openid}
+            </if>
+            <if test="mobile!=null and mobile!=''">
+                and mobile = #{mobile}
+            </if>
+            <if test="today!=null and today!=''">
+                and TO_DAYS(create_time) = TO_DAYS(NOW())
+            </if>
+        </where>
+    </select>
+
+    <insert id="save" parameterType="com.wzlue.smsCode.entity.SmsCodeEntity" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO sms_code
+		(
+            `openid`,
+            `mobile`,
+            `code`,
+            `create_time`,
+            `effective_time`,
+            `expiration_time`,
+            `count`,
+            `state`,
+            `interval_time`,
+            `permissible_request_time`
+									)
+		VALUES
+		(
+            #{openid},
+            #{mobile},
+            #{code},
+            #{createTime},
+            #{effectiveTime},
+            #{expirationTime},
+            #{count},
+            1,
+            #{intervalTime},
+            #{permissibleRequestTime}
+									)
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.smsCode.entity.SmsCodeEntity">
+        UPDATE sms_code
+        <set>
+            <if test="openid != null">`openid` = #{openid},</if>
+            <if test="mobile != null">`mobile` = #{mobile},</if>
+            <if test="code != null">`code` = #{code},</if>
+            <if test="createTime != null">`create_time` = #{createTime},</if>
+            <if test="effectiveTime != null">`effective_time` = #{effectiveTime},</if>
+            <if test="expirationTime != null">`expiration_time` = #{expirationTime},</if>
+            <if test="count != null">`count` = #{count},</if>
+            <if test="state != null">`state` = #{state},</if>
+            <if test="intervalTime!=null">`interval_time` = #{intervalTime},</if>
+            <if test="permissibleRequestTime!=null">`permissible_request_time`=#{permissibleRequestTime}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM sms_code WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM sms_code WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--之前的验证码失效-->
+    <update id="invalid" parameterType="com.wzlue.smsCode.entity.SmsCodeEntity">
+        UPDATE sms_code SET state = 2
+        WHERE `openid` = #{openid} and `mobile` = #{mobile} and id != #{id}
+    </update>
+
+    <!--删除今天之前的验证码-->
+    <delete id="deleteBeforeToday" parameterType="com.wzlue.smsCode.entity.SmsCodeEntity">
+        DELETE FROM sms_code
+        WHERE `openid` = #{openid}
+        and `mobile` = #{mobile}
+        and <![CDATA[ TO_DAYS(create_time) < TO_DAYS(NOW()) ]]>
+        and id != #{id}
+    </delete>
+
+</mapper>

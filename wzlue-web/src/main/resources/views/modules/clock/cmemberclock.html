@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>入职用户打卡表</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/AdminLTE.min.css">
+    <link rel="stylesheet" href="../../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+    <link rel="stylesheet" href="../../css/bootstrap-table.min.css">
+    <link rel="stylesheet" href="../../plugins/bootstrap-validator/css/bootstrap-validator.min.css">
+    <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../plugins/treegrid/jquery.treegrid.css">
+
+</head>
+<body>
+<div id="rrapp" v-cloak class="content-wrapper wzl-content-wrapper">
+    <section class="content-header">
+        <h1>
+            入职用户打卡表 &nbsp;<small v-if="title!=''">{{title}}</small>
+        </h1>
+    </section>
+    <div v-show="showList">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <div class="box-header with-border">
+                            <button class="btn btn-primary" @click="query"><i class="fa fa-search"></i>&nbsp;查询</button>
+                            <button v-if="hasPermission('clock:cMemberClock:save')" class="btn btn-primary"
+                                    @click="add">
+                                <i class="fa fa-plus"></i>&nbsp;新增
+                            </button>
+                            <button v-if="hasPermission('clock:cMemberClock:update')" class="btn btn-warning"
+                                    @click="update">
+                                <i class="fa fa-trash-o"></i>&nbsp;修改
+                            </button>
+                            <button v-if="hasPermission('clock:cMemberClock:delete')" class="btn btn-danger"
+                                    @click="del">
+                                <i class="fa fa-trash-o"></i>&nbsp;删除
+                            </button>
+                        </div>
+                        <div class="box-body">
+                            <div class="table-responsive">
+                                <table id="table"></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div v-show="!showList">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <form class="form-horizontal">
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">微信用户唯一标识</div>
+                                    <div class="col-sm-10">
+                                        <input type="text" name="openId" class="form-control"
+                                               v-model="cMemberClock.openId" placeholder="微信用户唯一标识"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">入职用户id</div>
+                                    <div class="col-sm-10">
+                                        <input type="text" name="userNo" class="form-control"
+                                               v-model="cMemberClock.userNo" placeholder="入职用户id"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">门店招聘id</div>
+                                    <div class="col-sm-10">
+                                        <input type="text" name="shopRecruitmentId" class="form-control"
+                                               v-model="cMemberClock.shopRecruitmentId" placeholder="门店招聘id"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">打卡时间</div>
+                                    <div class="col-sm-10">
+                                        <input type="text" name="clockTime" class="form-control"
+                                               v-model="cMemberClock.clockTime" placeholder="打卡时间"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">打卡类型(1打卡2补卡)</div>
+                                    <div class="col-sm-10">
+                                        <input type="text" name="clockType" class="form-control"
+                                               v-model="cMemberClock.clockType" placeholder="打卡类型(1打卡2补卡)"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">打卡地址</div>
+                                    <div class="col-sm-10">
+                                        <input type="text" name="clockAddress" class="form-control"
+                                               v-model="cMemberClock.clockAddress" placeholder="打卡地址"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">备注说明</div>
+                                    <div class="col-sm-10">
+                                        <input type="text" name="remark" class="form-control"
+                                               v-model="cMemberClock.remark" placeholder="备注说明"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">设备id</div>
+                                    <div class="col-sm-10">
+                                        <input type="text" name="deviceId" class="form-control"
+                                               v-model="cMemberClock.deviceId" placeholder="设备id"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">逻辑删除标记（1已删除2未删除）</div>
+                                    <div class="col-sm-10">
+                                        <input type="text" name="delFlag" class="form-control"
+                                               v-model="cMemberClock.delFlag" placeholder="逻辑删除标记（1已删除2未删除）"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">应用ID</div>
+                                    <div class="col-sm-10">
+                                        <input type="text" name="appId" class="form-control"
+                                               v-model="cMemberClock.appId" placeholder="应用ID"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">创建者</div>
+                                    <div class="col-sm-10">
+                                        <input type="text" name="createId" class="form-control"
+                                               v-model="cMemberClock.createId" placeholder="创建者"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">创建时间</div>
+                                    <div class="col-sm-10">
+                                        <input type="text" name="createDate" class="form-control"
+                                               v-model="cMemberClock.createDate" placeholder="创建时间"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">更新者</div>
+                                    <div class="col-sm-10">
+                                        <input type="text" name="updateId" class="form-control"
+                                               v-model="cMemberClock.updateId" placeholder="更新者"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">更新时间</div>
+                                    <div class="col-sm-10">
+                                        <input type="text" name="updateDate" class="form-control"
+                                               v-model="cMemberClock.updateDate" placeholder="更新时间"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label"></div>
+                                    <input type="button" class="btn btn-primary" @click="validate" value="确定"/>
+                                    &nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload"
+                                                       value="返回"/>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script src="../../libs/jquery.min.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../libs/bootstrap.min.js"></script>
+<script src="../../libs/vue.min.js"></script>
+<!--bootstrap-table-->
+<script src="../../plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="../../plugins/bootstrap-table/locale/bootstrap-table-zh-CN.js"></script>
+<!--bootstrap-validator-->
+<script src="../../plugins/bootstrap-validator/js/bootstrap-validator.min.js"></script>
+<script src="../../plugins/bootstrap-validator/js/zh_CN.min.js"></script>
+<script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+<script src="../../js/common.js"></script>
+
+<script src="../../js/modules/clock/cmemberclock.js"></script>
+</body>
+</html>

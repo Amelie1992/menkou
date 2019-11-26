@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.smsCode.dao.WxAppSmsAccountDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.smsCode.entity.WxAppSmsAccountEntity" id="wxAppSmsAccountMap">
+        <result property="appId" column="app_id"/>
+        <result property="appName" column="app_name"/>
+        <result property="accountSid" column="account_sid"/>
+        <result property="accountApikey" column="account_apikey"/>
+        <result property="tplId" column="tpl_id"/>
+        <result property="tplIdGr" column="tpl_id_gr"/>
+        <result property="tplIdSh" column="tpl_id_sh"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+	<select id="queryObject" resultType="com.wzlue.smsCode.entity.WxAppSmsAccountEntity">
+		SELECT * FROM wx_app_sms_account WHERE app_id = #{value}
+	</select>
+
+	<select id="queryList" resultType="com.wzlue.smsCode.entity.WxAppSmsAccountEntity">
+		SELECT * FROM wx_app_sms_account
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+			<otherwise>
+                ORDER BY app_id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			LIMIT #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		SELECT count(*) FROM wx_app_sms_account
+	</select>
+	 
+	<insert id="save" parameterType="com.wzlue.smsCode.entity.WxAppSmsAccountEntity">
+		INSERT INTO wx_app_sms_account
+		(
+													`app_id`, 
+																	`app_name`, 
+																	`account_sid`, 
+																	`account_apikey`, 
+																	`tpl_id`, 
+																	`tpl_id_gr`, 
+																	`tpl_id_sh`, 
+																	`create_time`
+									)
+		VALUES
+		(
+													#{appId}, 
+																	#{appName}, 
+																	#{accountSid}, 
+																	#{accountApikey}, 
+																	#{tplId}, 
+																	#{tplIdGr}, 
+																	#{tplIdSh}, 
+																	#{createTime}
+									)
+	</insert>
+	 
+	<update id="update" parameterType="com.wzlue.smsCode.entity.WxAppSmsAccountEntity">
+		UPDATE wx_app_sms_account
+		<set>
+																				<if test="appName != null">`app_name` = #{appName}, </if>
+																	<if test="accountSid != null">`account_sid` = #{accountSid}, </if>
+																	<if test="accountApikey != null">`account_apikey` = #{accountApikey}, </if>
+																	<if test="tplId != null">`tpl_id` = #{tplId}, </if>
+																	<if test="tplIdGr != null">`tpl_id_gr` = #{tplIdGr}, </if>
+																	<if test="tplIdSh != null">`tpl_id_sh` = #{tplIdSh}, </if>
+																	<if test="createTime != null">`create_time` = #{createTime}</if>
+									</set>
+		WHERE app_id = #{appId}
+	</update>
+	
+	<delete id="delete">
+		DELETE FROM wx_app_sms_account WHERE app_id = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		DELETE FROM wx_app_sms_account WHERE app_id IN
+		<foreach item="appId" collection="array" open="(" separator="," close=")">
+			#{appId}
+		</foreach>
+	</delete>
+
+</mapper>

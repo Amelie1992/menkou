@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.store.dao.WxAppJobTypeDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.store.entity.WxAppJobTypeEntity" id="wxAppJobTypeMap">
+        <result property="appId" column="app_id"/>
+        <result property="number" column="number"/>
+        <result property="button1" column="button1"/>
+        <result property="button2" column="button2"/>
+        <result property="button3" column="button3"/>
+        <result property="button4" column="button4"/>
+        <result property="button5" column="button5"/>
+        <result property="button6" column="button6"/>
+        <result property="button7" column="button7"/>
+        <result property="button8" column="button8"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+	<select id="queryObject" resultType="com.wzlue.store.entity.WxAppJobTypeEntity">
+		SELECT
+		 a.*,
+		(select c.config_value from t_store_config c where c.config_id = a.button1) button11,
+		(select c.config_value from t_store_config c where c.config_id = a.button2) button22,
+		(select c.config_value from t_store_config c where c.config_id = a.button3) button33,
+		(select c.config_value from t_store_config c where c.config_id = a.button4) button44,
+		(select c.config_value from t_store_config c where c.config_id = a.button5) button55,
+		(select c.config_value from t_store_config c where c.config_id = a.button6) button66,
+		(select c.config_value from t_store_config c where c.config_id = a.button7) button77,
+		(select c.config_value from t_store_config c where c.config_id = a.button8) button88
+		FROM wx_app_job_type a WHERE app_id = #{value}
+	</select>
+
+	<select id="queryList" resultType="com.wzlue.store.entity.WxAppJobTypeEntity">
+		SELECT
+		a.* ,
+		b.name As appname,
+		(select c.config_value from t_store_config c where c.config_id = a.button1) button11,
+		(select c.config_value from t_store_config c where c.config_id = a.button2) button22,
+		(select c.config_value from t_store_config c where c.config_id = a.button3) button33,
+		(select c.config_value from t_store_config c where c.config_id = a.button4) button44,
+		(select c.config_value from t_store_config c where c.config_id = a.button5) button55,
+		(select c.config_value from t_store_config c where c.config_id = a.button6) button66,
+		(select c.config_value from t_store_config c where c.config_id = a.button7) button77,
+		(select c.config_value from t_store_config c where c.config_id = a.button8) button88
+		FROM wx_app_job_type a
+		left join wx_app b on a.app_id = b.id AND b.del_flag = 0
+		<where>
+			1=1
+			<if test="appId != null and appId.trim() != ''">
+				AND a.app_id = #{appId}
+			</if>
+		</where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+			<otherwise>
+                ORDER BY app_id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			LIMIT #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		SELECT count(*) FROM wx_app_job_type a
+		left join wx_app b on a.app_id = b.id AND b.del_flag = 0
+		<where>
+			1=1
+			<if test="appId != null and appId.trim() != ''">
+				AND a.app_id = #{appId}
+			</if>
+		</where>
+	</select>
+	 
+	<insert id="save" parameterType="com.wzlue.store.entity.WxAppJobTypeEntity">
+		INSERT INTO wx_app_job_type
+		(
+													`app_id`, 
+																	`number`, 
+																	`button1`, 
+																	`button2`, 
+																	`button3`, 
+																	`button4`, 
+																	`button5`, 
+																	`button6`, 
+																	`button7`, 
+																	`button8`, 
+																	`create_time`, 
+																	`update_time`
+									)
+		VALUES
+		(
+													#{appId}, 
+																	#{number}, 
+																	#{button1}, 
+																	#{button2}, 
+																	#{button3}, 
+																	#{button4}, 
+																	#{button5}, 
+																	#{button6}, 
+																	#{button7}, 
+																	#{button8}, 
+																	now(),
+																	#{updateTime}
+									)
+	</insert>
+	 
+	<update id="update" parameterType="com.wzlue.store.entity.WxAppJobTypeEntity">
+		UPDATE wx_app_job_type
+		<set>
+			<if test="number != null">`number` = #{number}, </if>
+			<if test="button1 != null">`button1` = #{button1}, </if>
+			<if test="button2 != null">`button2` = #{button2}, </if>
+			<if test="button3 != null">`button3` = #{button3}, </if>
+			<if test="button4 != null">`button4` = #{button4}, </if>
+			<if test="button5 != null and button5 != -1">`button5` = #{button5}, </if>
+			<if test="button6 != null and button6 != -1">`button6` = #{button6}, </if>
+			<if test="button7 != null and button7 != -1">`button7` = #{button7}, </if>
+			<if test="button8 != null and button8 != -1">`button8` = #{button8}, </if>
+			<if test="button5 != null and button5 == -1">`button5` = null, </if>
+			<if test="button6 != null and button6 == -1">`button6` = null, </if>
+			<if test="button7 != null and button7 == -1">`button7` = null, </if>
+			<if test="button8 != null and button8 == -1">`button8` = null, </if>
+			<if test="updateTime != null">`update_time` = #{updateTime}</if>
+		</set>
+		WHERE app_id = #{appId}
+	</update>
+	
+	<delete id="delete">
+		DELETE FROM wx_app_job_type WHERE app_id = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		DELETE FROM wx_app_job_type WHERE app_id IN
+		<foreach item="appId" collection="array" open="(" separator="," close=")">
+			#{appId}
+		</foreach>
+	</delete>
+
+</mapper>

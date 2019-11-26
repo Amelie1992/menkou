@@ -1,0 +1,12 @@
+com\wzlue\draw\dao\IntegralDrawRecordDao.class
+com\wzlue\draw\entity\IntegralDrawRecordEntity.class
+com\wzlue\draw\service\impl\IntegralDrawRecordServiceImpl.class
+com\wzlue\draw\entity\IntegralDrawPrizeEntity.class
+com\wzlue\draw\dao\IntegralDrawPrizeDao.class
+com\wzlue\draw\service\WxAppIntegralDrawService.class
+com\wzlue\draw\service\impl\WxAppIntegralDrawServiceImpl.class
+com\wzlue\draw\service\IntegralDrawPrizeService.class
+com\wzlue\draw\entity\WxAppIntegralDrawEntity.class
+com\wzlue\draw\dao\WxAppIntegralDrawDao.class
+com\wzlue\draw\service\impl\IntegralDrawPrizeServiceImpl.class
+com\wzlue\draw\service\IntegralDrawRecordService.class

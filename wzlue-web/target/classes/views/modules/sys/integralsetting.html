@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>积分设置</title>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/AdminLTE.min.css">
+    <link rel="stylesheet" href="../../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+    <link rel="stylesheet" href="../../css/bootstrap-table.min.css">
+    <link rel="stylesheet" href="../../plugins/bootstrap-validator/css/bootstrap-validator.min.css">
+    <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../plugins/treegrid/jquery.treegrid.css">
+    <link rel="stylesheet" href="../../plugins/iCheck/all.css">
+
+</head>
+<body>
+<div id="rrapp" v-cloak class="content-wrapper wzl-content-wrapper">
+    <section class="content-header">
+        <h1>
+			积分设置 &nbsp;<small v-if="title!=''">{{title}}</small>
+        </h1>
+    </section>
+    <div v-show="!showList">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <form class="form-horizontal" style="padding-left:20px; padding-right:20px">
+
+                            <div class="row">
+                            <h3>新手任务</h3>
+                             </div>
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="input-group">
+                                        <span class="input-group-addon">引导完善（手机号+微信号）填写，可获</span>
+                                        <input type="text" class="form-control" name="newbieTaskScore" v-model="newbieTask.score">
+                                        <span class="input-group-addon">积分</span>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            <div class="row">
+                                <h3>签到奖励</h3>
+                            </div>
+
+                            <div class="row">
+
+                                <div class="col-sm-3">
+                                    <div class="input-group">
+                                        <span class="input-group-addon">每日签到，可获得</span>
+                                        <input type="text" class="form-control" name="signInRuleScore" v-model="signInRule.score">
+                                        <span class="input-group-addon">积分</span>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="row" style="margin-top:10px;">
+                                <div class="col-sm-3">
+                                    <div class="input-group">
+                                        <input type="button" class="btn btn-success" @click="addwardRules" value="增加额外奖励"/>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                            <div class="row">
+
+                                <div class="col-sm-4">
+                                    <div class="table-responsive" style="max-height: 550px;">
+                                        <table class="table table-bordered">
+
+                                            <tbody>
+                                            <tr v-for="(item,index) in awardRulesList">
+                                                <td>
+                                                    <div class="input-group">
+                                                        <div class="input-group-addon" style="width: 15%">连续签到</div>
+                                                        <input type="text" class="form-control"
+                                                               v-model="awardRulesList[index].days"
+                                                               placeholder="天数"/>
+                                                        <div class="input-group-addon" style="width: 15%">天，可额外获得</div>
+                                                        <input type="text" class="form-control"
+                                                               v-model="awardRulesList[index].addscore"
+                                                               placeholder="奖励"/>
+                                                        <div class="input-group-addon" style="width: 15%">积分</div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <a class="fa fa-trash-o" href="javascript:void(0)"
+                                                       @click="remove(index)"></a>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" style="margin-top:20px">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label"></div>
+                                    <input type="button" class="btn btn-primary" @click="validate" value="确定"/>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script src="../../libs/jquery.min.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../libs/bootstrap.min.js"></script>
+<script src="../../libs/vue.min.js"></script>
+<!--bootstrap-table-->
+<script src="../../plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="../../plugins/bootstrap-table/locale/bootstrap-table-zh-CN.js"></script>
+<!--bootstrap-validator-->
+<script src="../../plugins/bootstrap-validator/js/bootstrap-validator.min.js"></script>
+<script src="../../plugins/bootstrap-validator/js/zh_CN.min.js"></script>
+<script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+<script src="../../js/common.js"></script>
+<script src="../../plugins/iCheck/icheck.min.js"></script>
+<script src="../../js/modules/sys/integralsetting.js"></script>
+
+
+</body>
+<script>
+
+    $(function(){
+        vm.awardRulesList.push({
+            days: '',
+            addscore: ''
+        });
+    })
+</script>
+</html>

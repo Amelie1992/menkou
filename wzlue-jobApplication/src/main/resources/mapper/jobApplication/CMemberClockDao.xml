@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.jobApplication.dao.CMemberClockDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.jobApplication.entity.CMemberClockEntity" id="cMemberClockMap">
+        <result property="id" column="id"/>
+        <result property="openId" column="open_id"/>
+        <result property="userNo" column="user_no"/>
+        <result property="shopRecruitmentId" column="shop_recruitment_id"/>
+        <result property="clockTime" column="clock_time"/>
+        <result property="clockType" column="clock_type"/>
+        <result property="clockAddress" column="clock_address"/>
+        <result property="remark" column="remark"/>
+        <result property="numFlag" column="num_flag"/>
+        <result property="deviceId" column="device_id"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="appId" column="app_id"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+        <!--报名用户信息-->
+        <association property="jobApplication" javaType="com.wzlue.jobApplication.entity.JobApplicationEntity">
+            <result property="id" column="jid"/>
+            <result property="openid" column="openid"/>
+            <result property="nickName" column="nick_name"/>
+            <result property="realName" column="real_name"/>
+        </association>
+        <!--门店招聘信息-->
+        <association property="shopRecruitment" javaType="com.wzlue.recruitment.entity.ShopRecruitmentEntity">
+            <result property="id" column="sid"/>
+            <result property="recruitmentFirm" column="recruitment_firm"/>
+            <result property="title" column="title"/>
+            <result property="salary" column="salary"/>
+        </association>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.jobApplication.entity.CMemberClockEntity">
+		SELECT * FROM c_member_clock WHERE id = #{value}
+	</select>
+
+    <!--详情-->
+    <select id="detail" resultType="com.wzlue.jobApplication.entity.CMemberClockEntity">
+		SELECT * FROM c_member_clock_${time} WHERE id = #{id}
+	</select>
+
+    <!--api当天是否打卡-->
+    <select id="apiDetail" resultType="com.wzlue.jobApplication.entity.CMemberClockEntity">
+        SELECT * FROM c_member_clock_${time}
+        WHERE 1=1
+        <if test="userNo!=null and userNo!=''">
+            and user_no = #{userNo}
+        </if>
+        <if test="createDate!=null and createDate!=''">
+            and to_days(create_date) = to_days(#{createDate})
+        </if>
+    </select>
+
+    <select id="queryList" resultMap="cMemberClockMap">
+        SELECT *,ja.id AS jid,sr.id AS sid
+        FROM c_member_clock cmc
+        left join job_application ja on cmc.user_no = ja.id
+        left join shop_recruitment sr on cmc.shop_recruitment_id = sr.id
+        <where>
+            1=1
+            <if test="userNo!=null and userNo!=''">
+                and cmc.user_no = #{userNo}
+            </if>
+            <if test="beginTime!=null and beginTime!=''">
+                <![CDATA[   and DATE_FORMAT(cmc.clock_time, '%Y-%m-%d') >=  DATE_FORMAT(#{beginTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                <![CDATA[  and DATE_FORMAT(cmc.clock_time, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d') ]]>
+            </if>
+            and cmc.del_flag = 2
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY cmc.clock_type desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+		SELECT count(*) FROM c_member_clock cmc
+        left join job_application ja on cmc.user_no = ja.id
+        left join shop_recruitment sr on cmc.shop_recruitment_id = sr.id
+        <where>
+            1=1
+            <if test="userNo!=null and userNo!=null">
+                and cmc.user_no = #{userNo}
+            </if>
+            <if test="beginTime!=null and beginTime!=''">
+                <![CDATA[  and DATE_FORMAT(cmc.clock_time, '%Y-%m-%d') >=  DATE_FORMAT(#{beginTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                <![CDATA[  and DATE_FORMAT(cmc.clock_time, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d') ]]>
+            </if>
+            and cmc.del_flag = 2
+        </where>
+	</select>
+
+    <insert id="save" parameterType="com.wzlue.jobApplication.entity.CMemberClockEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO c_member_clock (
+            `open_id`,
+            `user_no`,
+            `shop_recruitment_id`,
+            `clock_time`,
+            `clock_type`,
+            `clock_address`,
+            `remark`,
+            `num_flag`,
+            `device_id`,
+            `del_flag`,
+            `app_id`,
+            `create_id`,
+            `create_date`,
+            `update_id`,
+            `update_date`
+        )
+        VALUES
+            (
+                #{openId},
+                #{userNo},
+                #{shopRecruitmentId},
+                #{clockTime},
+                #{clockType},
+                #{clockAddress},
+                #{remark},
+                #{numFlag},
+                #{deviceId},
+                #{delFlag},
+                #{appId},
+                #{createId},
+                #{createDate},
+                #{updateId},
+                #{updateDate}
+            )
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.jobApplication.entity.CMemberClockEntity">
+        UPDATE `c_member_clock_${tableName}`
+        <set>
+            <if test="openId != null">`open_id` = #{openId},</if>
+            <if test="userNo != null">`user_no` = #{userNo},</if>
+            <if test="shopRecruitmentId != null">`shop_recruitment_id` = #{shopRecruitmentId},</if>
+            <if test="clockTime != null">`clock_time` = #{clockTime},</if>
+            <if test="clockType != null">`clock_type` = #{clockType},</if>
+            <if test="clockAddress != null">`clock_address` = #{clockAddress},</if>
+            <if test="remark != null">`remark` = #{remark},</if>
+            <if test="numFlag != null">`num_flag` = #{numFlag},</if>
+            <if test="deviceId != null">`device_id` = #{deviceId},</if>
+            <if test="delFlag != null">`del_flag` = #{delFlag},</if>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="createId != null">`create_id` = #{createId},</if>
+            <if test="createDate != null">`create_date` = #{createDate},</if>
+            <if test="updateId != null">`update_id` = #{updateId},</if>
+            <if test="updateDate != null">`update_date` = #{updateDate}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!--批量软删-->
+    <update id="updateAllFlag">
+        UPDATE c_member_clock_${tableName} set del_flag = #{delFlag}
+        WHERE id IN
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <delete id="delete">
+		DELETE FROM c_member_clock WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM c_member_clock WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--创建新的考勤表-->
+    <update id="createTablesByYearMonth" parameterType="java.lang.String">
+		CREATE TABLE IF Not Exists `c_member_clock_${_parameter}` (
+	  		  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+              `open_id` varchar(100) DEFAULT NULL COMMENT '微信用户唯一标识',
+              `user_no` bigint(20) NOT NULL COMMENT '入职用户id',
+              `shop_recruitment_id` bigint(20) DEFAULT NULL COMMENT '门店招聘id',
+              `clock_time` datetime DEFAULT NULL COMMENT '打卡时间',
+              `clock_type` int(11) DEFAULT NULL COMMENT '打卡类型(1打卡2缺卡)',
+              `clock_address` varchar(255) DEFAULT NULL COMMENT '打卡地址',
+              `remark` varchar(255) DEFAULT NULL COMMENT '备注说明',
+              `num_flag` int(11) DEFAULT NULL COMMENT '打卡周期记录',
+              `device_id` varchar(64) DEFAULT NULL COMMENT '设备id',
+              `del_flag` varchar(64) DEFAULT '2' COMMENT '逻辑删除标记（1已删除2未删除）',
+              `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+              `create_id` varchar(64) DEFAULT NULL COMMENT '创建者',
+              `create_date` datetime DEFAULT NULL COMMENT '创建时间',
+              `update_id` varchar(64) DEFAULT NULL COMMENT '更新者',
+              `update_date` datetime DEFAULT NULL COMMENT '更新时间',
+              PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COMMENT='入职用户打卡表';
+	</update>
+
+    <!--查看某月考勤表是否存在-->
+    <select id="isExistTable" resultType="int">
+        SELECT count(1) FROM information_schema.TABLES
+        WHERE TABLE_SCHEMA = #{tableSchema} and TABLE_NAME = #{tableName};
+    </select>
+
+    <!--按年月查询考勤-->
+    <select id="queryMemberClock" resultMap="cMemberClockMap">
+        SELECT *,ja.id AS jid,sr.id AS sid
+        FROM `c_member_clock_${time}` cmc
+        left join job_application ja on cmc.user_no = ja.id
+        left join shop_recruitment sr on cmc.shop_recruitment_id = sr.id
+        left join wx_app b on cmc.app_id = b.id AND b.del_flag = 0
+        <where>
+            1=1
+            <if test="appId != null and appId.trim() != ''">
+                AND cmc.app_id = #{appId}
+            </if>
+            <if test="openId != null and openId.trim() != ''">
+                AND cmc.open_id = #{openId}
+            </if>
+            <if test="userNo!=null and userNo!=null">
+                and cmc.user_no = #{userNo}
+            </if>
+            <if test="beginTime!=null and beginTime!=''">
+                <![CDATA[   and DATE_FORMAT(cmc.clock_time, '%Y-%m-%d') >=  DATE_FORMAT(#{beginTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                <![CDATA[  and DATE_FORMAT(cmc.clock_time, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="clockTime!=null and clockTime!=null">
+                and cmc.clock_time = #{clockTime}
+            </if>
+            and cmc.del_flag = 2
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY cmc.clock_type desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+    <select id="queryMemberClock2" resultMap="cMemberClockMap">
+        SELECT *,ja.id AS jid,sr.id AS sid
+        FROM `c_member_clock_${time}` cmc
+        left join job_application ja on cmc.user_no = ja.id
+        left join shop_recruitment sr on cmc.shop_recruitment_id = sr.id
+        left join wx_app b on cmc.app_id = b.id AND b.del_flag = 0
+        <where>
+            1=1
+            <if test="appId != null and appId.trim() != ''">
+                AND cmc.app_id = #{appId}
+            </if>
+            <if test="openId != null and openId.trim() != ''">
+                AND cmc.open_id = #{openId}
+            </if>
+            <if test="userNo!=null and userNo!=null">
+                and cmc.user_no = #{userNo}
+            </if>
+            <if test="beginTime!=null and beginTime!=''">
+                <![CDATA[   and DATE_FORMAT(cmc.clock_time, '%Y-%m-%d') >=  DATE_FORMAT(#{beginTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                <![CDATA[  and DATE_FORMAT(cmc.clock_time, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="clockTime!=null and clockTime!=null">
+                and cmc.clock_time = #{clockTime}
+            </if>
+            and cmc.del_flag = 2
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY cmc.id asc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryMemberClockTotal" resultType="int">
+        SELECT count(*)
+        FROM `c_member_clock_${time}` cmc
+        left join job_application ja on cmc.user_no = ja.id
+        left join shop_recruitment sr on cmc.shop_recruitment_id = sr.id
+        left join wx_app b on cmc.app_id = b.id AND b.del_flag = 0
+        <where>
+            1=1
+            <if test="appId != null and appId.trim() != ''">
+                AND cmc.app_id = #{appId}
+            </if>
+            <if test="userNo!=null and userNo!=null">
+                and cmc.user_no = #{userNo}
+            </if>
+            <if test="beginTime!=null and beginTime!=''">
+                <![CDATA[   and DATE_FORMAT(cmc.clock_time, '%Y-%m-%d') >=  DATE_FORMAT(#{beginTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                <![CDATA[  and DATE_FORMAT(cmc.clock_time, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d') ]]>
+            </if>
+            and cmc.del_flag = 2
+        </where>
+    </select>
+
+    <!--指定表名添加-->
+    <insert id="saveList" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO `c_member_clock_${cMemberClockEntity.tableName}` (
+            `open_id`,
+            `user_no`,
+            `shop_recruitment_id`,
+            `clock_type`,
+            `app_id`,
+            `create_id`,
+            `create_date`
+        )
+        VALUES
+            (
+                #{cMemberClockEntity.openId},
+                #{cMemberClockEntity.userNo},
+                #{cMemberClockEntity.shopRecruitmentId},
+                #{cMemberClockEntity.clockType},
+                #{cMemberClockEntity.appId},
+                #{cMemberClockEntity.createId},
+                #{cMemberClockEntity.createDate}
+            )
+	</insert>
+
+    <!--昨日打卡记录-->
+    <select id="yesterdayClock" resultType="com.wzlue.jobApplication.entity.CMemberClockEntity">
+		select * from c_member_clock_${tableName} where to_days(create_date) = to_days(#{createDate}) and user_no=#{userNo};
+	</select>
+
+    <!--前一天日期-->
+    <select id="beforeDay" resultType="String">
+        select date_sub(#{today},interval 1 day);
+    </select>
+
+    <!--查询所有的打卡记录表-->
+    <select id="cMemBerClockTables" resultType="string">
+        select TABLE_NAME
+        from information_schema.tables
+        <![CDATA[where table_schema = 'menkou' AND TABLE_NAME LIKE 'c_member_clock_%']]>
+    </select>
+
+    <!--昨日打卡记录-->
+    <select id="apiDayClock" resultType="com.wzlue.jobApplication.entity.CMemberClockEntity">
+		select * from c_member_clock_${tableName} where to_days(create_date) = to_days(#{createDate}) and user_no=#{userNo};
+	</select>
+
+</mapper>

@@ -1,0 +1,909 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.recruitment.dao.ShopRecruitmentDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.recruitment.entity.ShopRecruitmentEntity" id="shopRecruitmentMap">
+        <result property="id" column="id"/>
+        <result property="recruitmentFirm" column="recruitment_firm"/>
+        <result property="logo" column="logo"/>
+        <result property="title" column="title"/>
+        <result property="salary" column="salary"/>
+        <result property="hourlyWage" column="hourly_wage"/>
+        <result property="province" column="province"/>
+        <result property="city" column="city"/>
+        <result property="area" column="area"/>
+        <result property="street" column="street"/>
+        <result property="position" column="position"/>
+        <result property="longitude" column="longitude"/>
+        <result property="latitude" column="latitude"/>
+        <result property="enterpriseSize" column="enterprise_size"/>
+        <result property="enterpriseAge" column="enterprise_age"/>
+        <result property="numberOfRecruitment" column="number_of_recruitment"/>
+        <result property="jobDescription" column="job_description"/>
+        <result property="jobRequirement" column="job_requirement"/>
+        <result property="jobResponsibilities" column="job_responsibilities"/>
+        <result property="workTime" column="work_time"/>
+        <result property="companyBenefits" column="company_benefits"/>
+        <result property="enterpriseInfo" column="enterprise_info"/>
+        <result property="recommendFlag" column="recommend_flag"/>
+        <result property="famousFlag" column="famous_flag"/>
+        <result property="shopSuspendFlag" column="shop_suspend_flag"/>
+        <result property="platformSuspendFlag" column="platform_suspend_flag"/>
+        <result property="appId" column="app_id"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="belongTo" column="belong_to"/>
+        <result property="hasEarnest" column="has_earnest"/>
+        <result property="feeReturnType" column="feeReturn_type"/>
+        <result property="workHours" column="work_hours"/>
+        <result property="earnest" column="earnest"/>
+        <result property="earnestOne" column="earnest_one"/>
+        <result property="reviewState" column="review_state"/>
+        <result property="reviewMsg" column="review_msg"/>
+        <result property="trace" column="trace"/>
+        <result property="isEarnest" column="is_earnest"/>
+        <result property="entryFlag" column="entry_flag"/>
+        <result property="distance" column="distance"/>
+        <result property="bonus" column="bonus"/>
+        <result property="entryDays" column="entry_days"/>
+        <result property="minorityFlag" column="minority_flag"/>
+        <result property="studentFlag" column="student_flag"/>
+        <result property="olderFlag" column="older_flag"/>
+        <result property="firstHandFlag" column="first_hand_flag"/>
+        <result property="pageView" column="page_view"/>
+        <association property="applicationMaterials" javaType="com.wzlue.recruitment.entity.ApplicationMaterialsEntity"
+                     column="id" select="com.wzlue.recruitment.dao.ApplicationMaterialsDao.queryByRecruitmentId"
+                     autoMapping="true"/>
+        <collection property="feeReturnList" ofType="com.wzlue.recruitment.entity.FeeReturnEntity"
+                    column="id" select="com.wzlue.recruitment.dao.FeeReturnDao.queryByRecruitmentId"
+                    autoMapping="true"/>
+        <collection property="labelList" ofType="com.wzlue.recruitment.entity.ShopRecruitmentLabelEntity"
+                    column="id" select="com.wzlue.recruitment.dao.ShopRecruitmentLabelDao.queryByRecruitmentId"
+                    autoMapping="true"/>
+        <collection property="banner" ofType="com.wzlue.sys.entity.SysImageEntity"
+                    column="{type=table_name,code=id}" select="com.wzlue.sys.dao.SysImageDao.queryList"
+                    autoMapping="true"/>
+    </resultMap>
+
+    <select id="queryObject2" resultType="com.wzlue.recruitment.entity.ShopRecruitmentEntity">
+		SELECT
+		a.*,
+		(select b.config_value from t_store_config b WHERE b.config_id=a.salary) salaryStr,
+		(select b.shortname from sys_area b WHERE b.id=a.province) provinceStr,
+		(select b.shortname from sys_area b WHERE b.id=a.city) cityStr,
+		(select b.shortname from sys_area b WHERE b.id=a.area) areaStr,
+		(select b.shortname from sys_area b WHERE b.id=a.street) streetStr
+		FROM shop_recruitment a WHERE id = #{value}
+	</select>
+
+    <select id="queryObject" resultMap="shopRecruitmentMap">
+		SELECT
+		a.* ,'shop_recruitment' `table_name`,
+		(select b.config_value from t_store_config b WHERE b.config_id=a.salary) salaryStr,
+		(select b.shortname from sys_area b WHERE b.id=a.province) provinceStr,
+		(select b.shortname from sys_area b WHERE b.id=a.city) cityStr,
+		(select b.shortname from sys_area b WHERE b.id=a.area) areaStr,
+		(select b.shortname from sys_area b WHERE b.id=a.street) streetStr,
+		(select sum(b.reward) from fee_return b WHERE b.recruitment_id=a.id) totalReward
+		FROM shop_recruitment a WHERE id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.recruitment.entity.ShopRecruitmentEntity">
+        SELECT
+        a.* ,
+        (select b.config_value from t_store_config b WHERE b.config_id=a.salary) salaryStr,
+        (select wx.name from wx_app wx WHERE wx.id = a.app_id) wxName,
+        (select b.shortname from sys_area b WHERE b.id=a.province) provinceStr,
+        (select b.shortname from sys_area b WHERE b.id=a.city) cityStr,
+        (select b.shortname from sys_area b WHERE b.id=a.area) areaStr,
+        (select b.shortname from sys_area b WHERE b.id=a.street) streetStr,
+        (select sum(b.reward) from fee_return b WHERE b.recruitment_id=a.id) totalReward
+        FROM shop_recruitment a
+        left join wx_app app on a.app_id = app.id AND app.del_flag = 0
+        <where>
+            1=1
+            <if test="city!=null and city!=''">
+                and a.city = #{city}
+            </if>
+            <if test="appId!=null and appId!=''">
+                and app.id = #{appId}
+            </if>
+            <if test="belongTo!=null and belongTo!=''">
+                and a.belong_to = #{belongTo}
+            </if>
+            <if test="hasEarnest!=null and hasEarnest!=''">
+                and a.has_earnest = #{hasEarnest}
+            </if>
+            <if test="isEarnest!=null and isEarnest!=''">
+                and a.is_earnest = #{isEarnest}
+            </if>
+            <if test="title!='' and title!=null">
+                and a.title like CONCAT('%',#{title},'%')
+            </if>
+            <if test="recruitmentFirm!='' and recruitmentFirm!=null">
+                and a.recruitment_firm like CONCAT('%',#{recruitmentFirm},'%')
+            </if>
+            <if test="search!='' and search!=null">
+                and ( a.title like CONCAT('%',#{search},'%') or a.recruitment_firm like CONCAT('%',#{search},'%') )
+            </if>
+            <if test="recommendFlag!=null and recommendFlag!=''">
+                and a.recommend_flag = #{recommendFlag}
+            </if>
+            <if test="famousFlag!=null and famousFlag!=''">
+                and a.famous_flag = #{famousFlag}
+            </if>
+            <if test="minorityFlag!=null and minorityFlag!=''">
+                and a.minority_flag = #{minorityFlag}
+            </if>
+            <if test="studentFlag!=null and studentFlag!=''">
+                and a.student_flag = #{studentFlag}
+            </if>
+            <if test="olderFlag!=null and olderFlag!=''">
+                and a.older_flag = #{olderFlag}
+            </if>
+            <if test="firstHandFlag!=null and firstHandFlag!=''">
+                and a.first_hand_flag = #{firstHandFlag}
+            </if>
+            <if test="feeReturnFlag!='' and feeReturnFlag!=null">
+                and a.id in (select recruitment_id from fee_return)
+            </if>
+            <if test="province!='' and province!=null">
+                and a.province = #{province}
+            </if>
+            <if test="city!='' and city!=null">
+                and a.city = #{city}
+            </if>
+            <if test="area!='' and area!=null">
+                and a.area = #{area}
+            </if>
+            <if test="street!='' and street!=null">
+                and a.street = #{street}
+            </if>
+            <if test="salary!='' and salary!=null">
+                and a.salary = #{salary}
+            </if>
+            <if test="enterpriseSize!='' and enterpriseSize!=null">
+                and ( (select IFNULL(a.enterprise_size,0))
+                between (select IFNULL((select range_min from t_store_config where config_id = #{enterpriseSize}),0))
+                and (select IFNULL((select range_max from t_store_config where config_id = #{enterpriseSize}),(select IFNULL(a.enterprise_size,0))))
+                )
+            </if>
+            <if test="feeReturn!='' and feeReturn!=null">
+                and ( (select IFNULL((select sum(b.reward) from fee_return b WHERE b.recruitment_id=a.id),0))
+                between (select IFNULL((select range_min from t_store_config where config_id = #{feeReturn}),0))
+                and (select IFNULL((select range_max from t_store_config where config_id = #{feeReturn}),
+                    (select IFNULL((select sum(b.reward) from fee_return b WHERE b.recruitment_id=a.id),0))))
+                )
+            </if>
+            <if test="shopSuspendFlag!='' and shopSuspendFlag!=null">
+                and a.shop_suspend_flag = #{shopSuspendFlag}
+            </if>
+            <if test="platformSuspendFlag!='' and platformSuspendFlag!=null">
+                and a.platform_suspend_flag = #{platformSuspendFlag}
+            </if>
+            <if test="reviewState!='' and reviewState!=null">
+                and a.review_state = #{reviewState}
+            </if>
+            <if test="delFlag!='' and delFlag!=null">
+                and a.del_flag = #{delFlag}
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+    <!--<if test="label!='' and label!=null">
+                and a.id in (select shop_recruitment_id from shop_recruitment_label where config_id=#{label})
+            </if>-->
+
+    <!--
+            <if test="salary!='' and salary!=null">
+                    and ( (select IFNULL(a.salary,0))
+                    between (select IFNULL((select range_min from t_store_config where config_id = #{salary}),0))
+                    and (select IFNULL((select range_max from t_store_config where config_id = #{salary}),(select IFNULL(a.salary,0))))
+                    )
+            </if>
+    -->
+
+    <select id="queryTotal" resultType="int">
+        SELECT count(*) FROM shop_recruitment a
+        left join wx_app app on a.app_id = app.id AND app.del_flag = 0
+        <where>
+            1=1
+            <if test="city!=null and city!=''">
+                and a.city = #{city}
+            </if>
+            <if test="appId!=null and appId!=''">
+                and app.id = #{appId}
+            </if>
+            <if test="belongTo!=null and belongTo!=''">
+                and a.belong_to = #{belongTo}
+            </if>
+            <if test="hasEarnest!=null and hasEarnest!=''">
+                and a.has_earnest = #{hasEarnest}
+            </if>
+            <if test="isEarnest!=null and isEarnest!=''">
+                and a.is_earnest = #{isEarnest}
+            </if>
+            <if test="title!='' and title!=null">
+                and a.title like CONCAT('%',#{title},'%')
+            </if>
+            <if test="recruitmentFirm!='' and recruitmentFirm!=null">
+                and a.recruitment_firm like CONCAT('%',#{recruitmentFirm},'%')
+            </if>
+            <if test="search!='' and search!=null">
+                and ( a.title like CONCAT('%',#{search},'%') or a.recruitment_firm like CONCAT('%',#{search},'%') )
+            </if>
+            <if test="recommendFlag!=null and recommendFlag!=''">
+                and a.recommend_flag = #{recommendFlag}
+            </if>
+            <if test="famousFlag!=null and famousFlag!=''">
+                and a.famous_flag = #{famousFlag}
+            </if>
+            <if test="minorityFlag!=null and minorityFlag!=''">
+                and a.minority_flag = #{minorityFlag}
+            </if>
+            <if test="studentFlag!=null and studentFlag!=''">
+                and a.student_flag = #{studentFlag}
+            </if>
+            <if test="olderFlag!=null and olderFlag!=''">
+                and a.older_flag = #{olderFlag}
+            </if>
+            <if test="firstHandFlag!=null and firstHandFlag!=''">
+                and a.first_hand_flag = #{firstHandFlag}
+            </if>
+            <if test="feeReturnFlag!='' and feeReturnFlag!=null">
+                and a.id in (select recruitment_id from fee_return)
+            </if>
+            <if test="province!='' and province!=null">
+                and a.province = #{province}
+            </if>
+            <if test="city!='' and city!=null">
+                and a.city = #{city}
+            </if>
+            <if test="area!='' and area!=null">
+                and a.area = #{area}
+            </if>
+            <if test="street!='' and street!=null">
+                and a.street = #{street}
+            </if>
+            <if test="salary!='' and salary!=null">
+                and a.salary = #{salary}
+            </if>
+            <if test="enterpriseSize!='' and enterpriseSize!=null">
+                and ( (select IFNULL(a.enterprise_size,0))
+                between (select IFNULL((select range_min from t_store_config where config_id = #{enterpriseSize}),0))
+                and (select IFNULL((select range_max from t_store_config where config_id = #{enterpriseSize}),(select IFNULL(a.enterprise_size,0))))
+                )
+            </if>
+            <if test="feeReturn!='' and feeReturn!=null">
+                and ( (select IFNULL((select sum(b.reward) from fee_return b WHERE b.recruitment_id=a.id),0))
+                between (select IFNULL((select range_min from t_store_config where config_id = #{feeReturn}),0))
+                and (select IFNULL((select range_max from t_store_config where config_id = #{feeReturn}),
+                (select IFNULL((select sum(b.reward) from fee_return b WHERE b.recruitment_id=a.id),0))))
+                )
+            </if>
+            <if test="shopSuspendFlag!='' and shopSuspendFlag!=null">
+                and a.shop_suspend_flag = #{shopSuspendFlag}
+            </if>
+            <if test="platformSuspendFlag!='' and platformSuspendFlag!=null">
+                and a.platform_suspend_flag = #{platformSuspendFlag}
+            </if>
+            <if test="reviewState!='' and reviewState!=null">
+                and a.review_state = #{reviewState}
+            </if>
+            <if test="delFlag!='' and delFlag!=null">
+                and a.del_flag = #{delFlag}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryPlatFormList" resultType="com.wzlue.recruitment.entity.ShopRecruitmentEntity">
+        SELECT
+        a.* ,
+        (select b.config_value from t_store_config b WHERE b.config_id=a.salary) salaryStr,
+        (select wx.name from wx_app wx WHERE wx.id = a.app_id) wxName,
+        (select b.shortname from sys_area b WHERE b.id=a.province) provinceStr,
+        (select b.shortname from sys_area b WHERE b.id=a.city) cityStr,
+        (select b.shortname from sys_area b WHERE b.id=a.area) areaStr,
+        (select b.shortname from sys_area b WHERE b.id=a.street) streetStr
+        FROM shop_recruitment a
+        left join wx_app b on a.app_id = b.id AND b.del_flag = 0
+        <where>
+            1=1
+            <if test="appId != null and appId.trim() != ''">
+                <![CDATA[ AND a.app_id != #{appId} ]]>
+            </if>
+            <if test="numberOfRecruitmentS!=null and numberOfRecruitmentS!=''">
+                <![CDATA[ and a.number_of_recruitment >= #{numberOfRecruitmentS} ]]>
+            </if>
+            <if test="numberOfRecruitmentE!=null and numberOfRecruitmentE!=''">
+                <![CDATA[ and a.number_of_recruitment <= #{numberOfRecruitmentE} ]]>
+            </if>
+            <if test="province!='' and province!=null">
+                and province = #{province}
+            </if>
+            <if test="city!='' and city!=null">
+                and city = #{city}
+            </if>
+            <if test="area!='' and area!=null">
+                and area = #{area}
+            </if>
+            <if test="street!='' and street!=null">
+                and street = #{street}
+            </if>
+            <if test="isEarnest!='' and isEarnest!=null">
+                and a.is_earnest = #{isEarnest}
+            </if>
+            and a.belong_to = 2
+            and a.review_state = 2
+            and a.del_flag = 2
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.create_date desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryPlatFormTotal" resultType="int">
+        SELECT count(*),
+        (select wx.name from wx_app wx WHERE wx.id = a.app_id) wxName,
+        (select b.shortname from sys_area b WHERE b.id=a.province) provinceStr,
+        (select b.shortname from sys_area b WHERE b.id=a.city) cityStr,
+        (select b.shortname from sys_area b WHERE b.id=a.area) areaStr,
+        (select b.shortname from sys_area b WHERE b.id=a.street) streetStr
+        FROM shop_recruitment a
+        left join wx_app b on a.app_id = b.id AND b.del_flag = 0
+        <where>
+            1=1
+            <if test="appId != null and appId.trim() != ''">
+                <![CDATA[ AND a.app_id != #{appId} ]]>
+            </if>
+            <if test="numberOfRecruitmentS!=null and numberOfRecruitmentS!=''">
+                <![CDATA[ and a.number_of_recruitment >= #{numberOfRecruitmentS} ]]>
+            </if>
+            <if test="numberOfRecruitmentE!=null and numberOfRecruitmentE!=''">
+                <![CDATA[ and a.number_of_recruitment <= #{numberOfRecruitmentE} ]]>
+            </if>
+            <if test="province!='' and province!=null">
+                and province = #{province}
+            </if>
+            <if test="city!='' and city!=null">
+                and city = #{city}
+            </if>
+            <if test="area!='' and area!=null">
+                and area = #{area}
+            </if>
+            <if test="street!='' and street!=null">
+                and street = #{street}
+            </if>
+            <if test="isEarnest!='' and isEarnest!=null">
+                and a.is_earnest = #{isEarnest}
+            </if>
+            and a.belong_to = 2
+            and a.review_state = 2
+            and a.del_flag = 2
+        </where>
+    </select>
+
+    <insert id="save" parameterType="com.wzlue.recruitment.entity.ShopRecruitmentEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO shop_recruitment
+		(
+                `recruitment_firm`,
+                `logo`,
+                `title`,
+                `salary`,
+                `hourly_wage`,
+                `province`,
+                `city`,
+                `area`,
+                `street`,
+                `position`,
+                `longitude`,
+                `latitude`,
+                `enterprise_size`,
+                `enterprise_age`,
+                `number_of_recruitment`,
+                `job_description`,
+                `job_requirement`,
+                `job_responsibilities`,
+                `work_time`,
+                `company_benefits`,
+                `enterprise_info`,
+                `recommend_flag`,
+                `famous_flag`,
+                `shop_suspend_flag`,
+                `platform_suspend_flag`,
+                `app_id`,
+                `create_id`,
+                `create_date`,
+                `update_id`,
+                `update_date`,
+                `del_flag`,
+                `belong_to`,
+                `has_earnest`,
+                `feeReturn_type`,
+                `work_hours`,
+                `earnest`,
+                `earnest_one`,
+                `review_state`,
+                `review_msg`,
+                `trace`,
+                `bonus`,
+                `entry_days`,
+                `minority_flag`,
+                `student_flag`,
+                `older_flag`,
+                `first_hand_flag`,
+                `page_view`
+									)
+		VALUES
+		(
+                #{recruitmentFirm},
+                #{logo},
+                #{title},
+                #{salary},
+                #{hourlyWage},
+                #{province},
+                #{city},
+                #{area},
+                #{street},
+                #{position},
+                #{longitude},
+                #{latitude},
+                #{enterpriseSize},
+                #{enterpriseAge},
+                #{numberOfRecruitment},
+                #{jobDescription},
+                #{jobRequirement},
+                #{jobResponsibilities},
+                #{workTime},
+                #{companyBenefits},
+                #{enterpriseInfo},
+                #{recommendFlag},
+                #{famousFlag},
+                #{shopSuspendFlag},
+                #{platformSuspendFlag},
+                #{appId},
+                #{createId},
+                now(),
+                #{updateId},
+                now(),
+                2,
+                #{belongTo},
+                #{hasEarnest},
+                #{feeReturnType},
+                #{workHours},
+                #{earnest},
+                #{earnestOne},
+                #{reviewState},
+                #{reviewMsg},
+                #{trace},
+                #{bonus},
+                #{entryDays},
+                #{minorityFlag},
+                #{studentFlag},
+                #{olderFlag},
+                #{firstHandFlag},
+                0
+                              )
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.recruitment.entity.ShopRecruitmentEntity">
+        UPDATE shop_recruitment
+        <set>
+            <if test="recruitmentFirm != null">`recruitment_firm` = #{recruitmentFirm},</if>
+            <if test="logo != null">`logo` = #{logo},</if>
+            <if test="title != null">`title` = #{title},</if>
+            <if test="salary != null">`salary` = #{salary},</if>
+            <if test="hourlyWage != null and hourlyWage !='null'">`hourly_wage` = #{hourlyWage},</if>
+            <if test="hourlyWage != null and hourlyWage =='null'">`hourly_wage` = null,</if>
+            <if test="province != null">`province` = #{province},</if>
+            <if test="city != null">`city` = #{city},</if>
+            <if test="area != null">`area` = #{area},</if>
+            <if test="street != null">`street` = #{street},</if>
+            <if test="position != null">`position` = #{position},</if>
+            <if test="longitude != null">`longitude` = #{longitude},</if>
+            <if test="latitude != null">`latitude` = #{latitude},</if>
+            <if test="enterpriseSize != null">`enterprise_size` = #{enterpriseSize},</if>
+            <if test="enterpriseAge != null">`enterprise_age` = #{enterpriseAge},</if>
+            <if test="numberOfRecruitment != null">`number_of_recruitment` = #{numberOfRecruitment},</if>
+            <if test="jobDescription != null">`job_description` = #{jobDescription},</if>
+            <if test="jobRequirement != null">`job_requirement` = #{jobRequirement},</if>
+            <if test="jobResponsibilities != null">`job_responsibilities` = #{jobResponsibilities},</if>
+            <if test="workTime != null">`work_time` = #{workTime},</if>
+            <if test="companyBenefits != null">`company_benefits` = #{companyBenefits},</if>
+            <if test="enterpriseInfo != null">`enterprise_info` = #{enterpriseInfo},</if>
+            <if test="recommendFlag != null">`recommend_flag` = #{recommendFlag},</if>
+            <if test="famousFlag != null">`famous_flag` = #{famousFlag},</if>
+            <if test="shopSuspendFlag != null">`shop_suspend_flag` = #{shopSuspendFlag},</if>
+            <if test="platformSuspendFlag != null">`platform_suspend_flag` = #{platformSuspendFlag},</if>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="updateId != null">`update_id` = #{updateId},</if>
+            <if test="updateDate != null">`update_date` = now(),</if>
+            <if test="delFlag != null">`del_flag` = #{delFlag},</if>
+            <if test="belongTo != null">`belong_to` = #{belongTo},</if>
+            <if test="hasEarnest != null">`has_earnest` = #{hasEarnest},</if>
+            <if test="feeReturnType != null">`feeReturn_type` = #{feeReturnType},</if>
+            <if test="workHours != null">`work_hours` = #{workHours},</if>
+            <if test="earnest != null">`earnest` = #{earnest},</if>
+            <if test="earnestOne != null">`earnest_one` = #{earnestOne},</if>
+            <if test="reviewState != null">`review_state` = #{reviewState},</if>
+            <if test="reviewMsg != null">`review_msg` = #{reviewMsg},</if>
+            <if test="isEarnest != null">`is_earnest` = #{isEarnest},</if>
+            <if test="entryFlag != null">`entry_flag` = #{entryFlag},</if>
+            <if test="distance != null">`distance` = #{distance},</if>
+            <if test="bonus != null and bonus != 0">`bonus` = #{bonus},</if>
+            <if test="entryDays != null and entryDays != 0">`entry_days` = #{entryDays},</if>
+            <if test="bonus != null and bonus == 0">`bonus` = null,</if>
+            <if test="entryDays != null and entryDays == 0">`entry_days` = null,</if>
+            <if test="minorityFlag != null">`minority_flag` = #{minorityFlag},</if>
+            <if test="studentFlag != null">`student_flag` = #{studentFlag},</if>
+            <if test="olderFlag != null">`older_flag` = #{olderFlag},</if>
+            <if test="firstHandFlag != null">`first_hand_flag` = #{firstHandFlag}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM shop_recruitment WHERE id = #{value}
+	</delete>
+
+    <update id="deleteBatch">
+        UPDATE shop_recruitment SET del_flag = 1 WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="updateShopSuspendFlag">
+        UPDATE shop_recruitment
+        <set>
+            <if test="shopSuspendFlag != null and shopSuspendFlag != '' ">
+                shop_suspend_flag = #{shopSuspendFlag},
+            </if>
+            <if test="platformSuspendFlag != null">
+                platform_suspend_flag = #{platformSuspendFlag}
+            </if>
+        </set>
+        WHERE id IN
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="updateHavingStateAndMsg">
+        UPDATE shop_recruitment
+        <set>
+            <if test="reviewState != null ">
+                review_state = #{reviewState},
+            </if>
+            <if test="reviewMsg != null and reviewMsg.trim() != '' ">
+                review_msg = #{reviewMsg}
+            </if>
+
+        </set>
+
+        where review_state = #{stateFlag} and del_flag = 2
+              and id IN
+                <foreach item="id" collection="ids" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+
+
+    </update>
+
+    <select id="exist" resultType="int">
+        SELECT #{value} IN (SELECT trace FROM shop_recruitment)
+    </select>
+
+
+    <select id="queryTotalByIds" resultType="int">
+        SELECT count(*) FROM shop_recruitment a
+        where review_state = #{stateFlag} and del_flag = 2
+        and id IN
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <!---->
+    <select id="queryListByPlatform" resultType="com.wzlue.recruitment.entity.ShopRecruitmentEntity">
+        SELECT
+        a.* ,
+        (select b.config_value from t_store_config b WHERE b.config_id=a.salary) salaryStr,
+        (select b.shortname from sys_area b WHERE b.id=a.province) provinceStr,
+        (select b.shortname from sys_area b WHERE b.id=a.city) cityStr,
+        (select b.shortname from sys_area b WHERE b.id=a.area) areaStr,
+        (select b.shortname from sys_area b WHERE b.id=a.street) streetStr,
+        (select sum(b.reward) from fee_return b WHERE b.recruitment_id=a.id) totalReward,
+        app.name AS wx_name
+        FROM shop_recruitment a
+        left join wx_app app on a.app_id = app.id AND app.del_flag = 0
+        <where>
+            1=1
+            <if test="appId!=null and appId!=''">
+                and app.id = #{appId}
+            </if>
+            <if test="belongTo!=null and belongTo!=''">
+                and a.belong_to = #{belongTo}
+            </if>
+            <if test="title!='' and title!=null">
+                and a.title like CONCAT('%',#{title},'%')
+            </if>
+            <if test="recruitmentFirm!='' and recruitmentFirm!=null">
+                and a.recruitment_firm like CONCAT('%',#{recruitmentFirm},'%')
+            </if>
+            <if test="search!='' and search!=null">
+                and ( a.title like CONCAT('%',#{search},'%') or a.recruitment_firm like CONCAT('%',#{search},'%') )
+            </if>
+            <if test="label!='' and label!=null">
+                and a.id in (select shop_recruitment_id from shop_recruitment_label where config_id=#{label})
+            </if>
+            <if test="province!='' and province!=null">
+                and a.province = #{province}
+            </if>
+            <if test="city!='' and city!=null">
+                and a.city = #{city}
+            </if>
+            <if test="area!='' and area!=null">
+                and a.area = #{area}
+            </if>
+            <if test="street!='' and street!=null">
+                and a.street = #{street}
+            </if>
+            <if test="salary!='' and salary!=null">
+                and a.salary = #{salary}
+            </if>
+            <if test="enterpriseSize!='' and enterpriseSize!=null">
+                and ( (select IFNULL(a.enterprise_size,0))
+                between (select IFNULL((select range_min from t_store_config where config_id = #{enterpriseSize}),0))
+                and (select IFNULL((select range_max from t_store_config where config_id = #{enterpriseSize}),(select IFNULL(a.enterprise_size,0))))
+                )
+            </if>
+            <if test="feeReturn!='' and feeReturn!=null">
+                and ( (select IFNULL((select sum(b.reward) from fee_return b WHERE b.recruitment_id=a.id),0))
+                between (select IFNULL((select range_min from t_store_config where config_id = #{feeReturn}),0))
+                and (select IFNULL((select range_max from t_store_config where config_id = #{feeReturn}),
+                (select IFNULL((select sum(b.reward) from fee_return b WHERE b.recruitment_id=a.id),0))))
+                )
+            </if>
+            <if test="shopSuspendFlag!='' and shopSuspendFlag!=null">
+                and a.shop_suspend_flag = #{shopSuspendFlag}
+            </if>
+            <if test="platformSuspendFlag!='' and platformSuspendFlag!=null">
+                and a.platform_suspend_flag = #{platformSuspendFlag}
+            </if>
+            <if test="reviewState!='' and reviewState!=null">
+                and a.review_state = #{reviewState}
+            </if>
+            <if test="delFlag!='' and delFlag!=null">
+                and a.del_flag = #{delFlag}
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotalByPlatform" resultType="int">
+        SELECT count(*) FROM shop_recruitment a
+        left join wx_app app on a.app_id = app.id AND app.del_flag = 0
+        <where>
+            1=1
+            <if test="appId!=null and appId!=''">
+                and app.id = #{appId}
+            </if>
+            <if test="belongTo!=null and belongTo!=''">
+                and a.belong_to = #{belongTo}
+            </if>
+            <if test="title!='' and title!=null">
+                and a.title like CONCAT('%',#{title},'%')
+            </if>
+            <if test="recruitmentFirm!='' and recruitmentFirm!=null">
+                and a.recruitment_firm like CONCAT('%',#{recruitmentFirm},'%')
+            </if>
+            <if test="search!='' and search!=null">
+                and ( a.title like CONCAT('%',#{search},'%') or a.recruitment_firm like CONCAT('%',#{search},'%') )
+            </if>
+            <if test="label!='' and label!=null">
+                and a.id in (select shop_recruitment_id from shop_recruitment_label where config_id=#{label})
+            </if>
+            <if test="province!='' and province!=null">
+                and a.province = #{province}
+            </if>
+            <if test="city!='' and city!=null">
+                and a.city = #{city}
+            </if>
+            <if test="area!='' and area!=null">
+                and a.area = #{area}
+            </if>
+            <if test="street!='' and street!=null">
+                and a.street = #{street}
+            </if>
+            <if test="salary!='' and salary!=null">
+                and a.salary = #{salary}
+            </if>
+            <if test="enterpriseSize!='' and enterpriseSize!=null">
+                and ( (select IFNULL(a.enterprise_size,0))
+                between (select IFNULL((select range_min from t_store_config where config_id = #{enterpriseSize}),0))
+                and (select IFNULL((select range_max from t_store_config where config_id = #{enterpriseSize}),(select IFNULL(a.enterprise_size,0))))
+                )
+            </if>
+            <if test="feeReturn!='' and feeReturn!=null">
+                and ( (select IFNULL((select sum(b.reward) from fee_return b WHERE b.recruitment_id=a.id),0))
+                between (select IFNULL((select range_min from t_store_config where config_id = #{feeReturn}),0))
+                and (select IFNULL((select range_max from t_store_config where config_id = #{feeReturn}),
+                (select IFNULL((select sum(b.reward) from fee_return b WHERE b.recruitment_id=a.id),0))))
+                )
+            </if>
+            <if test="shopSuspendFlag!='' and shopSuspendFlag!=null">
+                and a.shop_suspend_flag = #{shopSuspendFlag}
+            </if>
+            <if test="platformSuspendFlag!='' and platformSuspendFlag!=null">
+                and a.platform_suspend_flag = #{platformSuspendFlag}
+            </if>
+            <if test="reviewState!='' and reviewState!=null">
+                and a.review_state = #{reviewState}
+            </if>
+            <if test="delFlag!='' and delFlag!=null">
+                and a.del_flag = #{delFlag}
+            </if>
+        </where>
+    </select>
+
+
+
+    <sql id="sort_before">
+        set @rownum=0;
+        SELECT
+        @rownum:=@rownum+1 as rownum,x.* from
+        (
+
+    </sql>
+    <sql id="sort_after">
+        ) x
+    </sql>
+    <sql id="selectListVo">
+        SELECT
+        a.* ,
+        (select wx.name from wx_app wx WHERE wx.id = a.app_id) wxName,
+        (select b.shortname from sys_area b WHERE b.id=a.province) provinceStr,
+        (select b.shortname from sys_area b WHERE b.id=a.city) cityStr,
+        (select b.shortname from sys_area b WHERE b.id=a.area) areaStr,
+        (select b.shortname from sys_area b WHERE b.id=a.street) streetStr,
+        (select sum(b.reward) from fee_return b WHERE b.recruitment_id=a.id) totalReward
+        FROM shop_recruitment a
+        left join wx_app app on a.app_id = app.id AND app.del_flag = 0
+    </sql>
+
+
+    <!---->
+    <select id="queryListByIds" resultType="com.wzlue.recruitment.entity.ShopRecruitmentEntity">
+        <include refid="sort_before"/>
+        <include refid="selectListVo"/>
+        <where>
+            a.del_flag = 2
+            and a.id in
+            <foreach item="id" collection="array" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>
+        ORDER BY a.id desc
+        <include refid="sort_after"/>
+    </select>
+
+    <!---->
+    <select id="queryListAll" resultType="com.wzlue.recruitment.entity.ShopRecruitmentEntity">
+        <include refid="sort_before"/>
+        <include refid="selectListVo"/>
+        <where>
+
+            <if test="flag != null and flag==1 ">
+                and a.id in (select recruitment_id from fee_return)
+            </if>
+            <if test="appId!=null and appId!=''">
+                and app.id = #{appId}
+            </if>
+            <if test="belongTo!=null and belongTo!=''">
+                and a.belong_to = #{belongTo}
+            </if>
+            <if test="title!='' and title!=null">
+                and a.title like CONCAT('%',#{title},'%')
+            </if>
+            <if test="recruitmentFirm!='' and recruitmentFirm!=null">
+                and a.recruitment_firm like CONCAT('%',#{recruitmentFirm},'%')
+            </if>
+            <if test="search!='' and search!=null">
+                and ( a.title like CONCAT('%',#{search},'%') or a.recruitment_firm like CONCAT('%',#{search},'%') )
+            </if>
+            <if test="recommendFlag!='' and recommendFlag!=null">
+                and a.recommend_flag = #{recommendFlag}
+            </if>
+            <if test="famousFlag!='' and famousFlag!=null">
+                and a.famous_flag = #{famousFlag}
+            </if>
+            <if test="feeReturnFlag!='' and feeReturnFlag!=null">
+                and a.id in (select recruitment_id from fee_return)
+            </if>
+            <if test="province!='' and province!=null">
+                and a.province = #{province}
+            </if>
+            <if test="city!='' and city!=null">
+                and a.city = #{city}
+            </if>
+            <if test="area!='' and area!=null">
+                and a.area = #{area}
+            </if>
+            <if test="street!='' and street!=null">
+                and a.street = #{street}
+            </if>
+            <if test="salary!='' and salary!=null">
+                and a.salary = #{salary}
+            </if>
+            <if test="enterpriseSize!='' and enterpriseSize!=null">
+                and ( (select IFNULL(a.enterprise_size,0))
+                between (select IFNULL((select range_min from t_store_config where config_id = #{enterpriseSize}),0))
+                and (select IFNULL((select range_max from t_store_config where config_id = #{enterpriseSize}),(select IFNULL(a.enterprise_size,0))))
+                )
+            </if>
+            <if test="feeReturn!='' and feeReturn!=null">
+                and ( (select IFNULL((select sum(b.reward) from fee_return b WHERE b.recruitment_id=a.id),0))
+                between (select IFNULL((select range_min from t_store_config where config_id = #{feeReturn}),0))
+                and (select IFNULL((select range_max from t_store_config where config_id = #{feeReturn}),
+                (select IFNULL((select sum(b.reward) from fee_return b WHERE b.recruitment_id=a.id),0))))
+                )
+            </if>
+            <if test="shopSuspendFlag!='' and shopSuspendFlag!=null">
+                and a.shop_suspend_flag = #{shopSuspendFlag}
+            </if>
+            <if test="platformSuspendFlag!='' and platformSuspendFlag!=null">
+                and a.platform_suspend_flag = #{platformSuspendFlag}
+            </if>
+            <if test="reviewState!='' and reviewState!=null">
+                and a.review_state = #{reviewState}
+            </if>
+            <if test="delFlag!='' and delFlag!=null">
+                and a.del_flag = #{delFlag}
+            </if>
+        </where>
+        ORDER BY a.id desc
+        <include refid="sort_after"/>
+
+    </select>
+
+    <!--浏览量-->
+    <update id="pageView">
+        UPDATE shop_recruitment SET page_view = page_view + 1
+        WHERE id = #{value}
+    </update>
+</mapper>

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.recruitment.dao.ApplicationMaterialsDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.recruitment.entity.ApplicationMaterialsEntity" id="applicationMaterialsMap">
+        <result property="id" column="id"/>
+        <result property="recruitmentId" column="recruitment_id"/>
+        <result property="area" column="area"/>
+        <result property="people" column="people"/>
+        <result property="appId" column="app_id"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="phone" column="phone"/>
+        <collection property="images" ofType="com.wzlue.sys.entity.SysImageEntity"
+                    column="{type=table_name,code=id}" select="com.wzlue.sys.dao.SysImageDao.queryList"
+                    autoMapping="true"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.recruitment.entity.ApplicationMaterialsEntity">
+		SELECT * FROM application_materials WHERE id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.recruitment.entity.ApplicationMaterialsEntity">
+        SELECT * FROM application_materials
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+		SELECT count(*) FROM application_materials
+	</select>
+
+    <insert id="save" parameterType="com.wzlue.recruitment.entity.ApplicationMaterialsEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO application_materials
+		(
+			`recruitment_id`,
+			`area`,
+			`people`,
+			`app_id`,
+			`create_id`,
+			`create_date`,
+			`update_id`,
+			`update_date`,
+			`del_flag`,
+			`phone`
+									)
+		VALUES
+		(
+			#{recruitmentId},
+			#{area},
+			#{people},
+			#{appId},
+			#{createId},
+			now(),
+			#{updateId},
+			now(),
+			2,
+			#{phone}
+									)
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.recruitment.entity.ApplicationMaterialsEntity">
+        UPDATE application_materials
+        <set>
+            <if test="recruitmentId != null">`recruitment_id` = #{recruitmentId},</if>
+            <if test="area != null">`area` = #{area},</if>
+            <if test="people != null">`people` = #{people},</if>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="createId != null">`create_id` = #{createId},</if>
+            <if test="createDate != null">`create_date` = #{createDate},</if>
+            <if test="updateId != null">`update_id` = #{updateId},</if>
+            <if test="updateDate != null">`update_date` = #{updateDate},</if>
+            <if test="delFlag != null">`del_flag` = #{delFlag},</if>
+            <if test="phone != null">`phone` = #{phone}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM application_materials WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM application_materials WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="queryByRecruitmentId" resultMap="applicationMaterialsMap">
+		SELECT *,'application_materials' `table_name` FROM application_materials WHERE recruitment_id = #{recruitmentId}
+	</select>
+
+    <delete id="deleteByRecruitmentId">
+		DELETE FROM application_materials WHERE recruitment_id = #{value}
+	</delete>
+</mapper>

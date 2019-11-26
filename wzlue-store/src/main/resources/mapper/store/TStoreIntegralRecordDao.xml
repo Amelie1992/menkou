@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.store.dao.TStoreIntegralRecordDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.store.entity.TStoreIntegralRecordEntity" id="tStoreIntegralRecordMap">
+        <result property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="openId" column="open_id"/>
+        <result property="appId" column="app_id"/>
+        <result property="remarks" column="remarks"/>
+        <result property="integral" column="integral"/>
+        <result property="createTime" column="create_time"/>
+        <result property="integralType" column="integral_type"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.store.entity.TStoreIntegralRecordEntity">
+		SELECT * FROM t_store_integral_record WHERE id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.store.entity.TStoreIntegralRecordEntity">
+        SELECT
+        a.id,
+        a.open_id,
+        a.app_id,
+        a.remarks,
+        a.integral,
+        a.create_time,
+        a.integral_type,
+        b.nick_name wname
+        FROM t_store_integral_record a
+        left join wx_user b on a.user_id = b.id
+
+        <where>
+            <if test="userId != null and userId.trim() != '' ">
+                and a.user_id = #{userId}
+            </if>
+
+            <if test="createTime!=null and createTime!=''">
+                and DATE_FORMAT(a.create_time, '%Y%m') = #{createTime}
+
+            </if>
+
+            <if test="integralType!=null and integralType!='' ">
+                and a.integral_type = #{integralType}
+
+            </if>
+        </where>
+
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        SELECT count(*) FROM t_store_integral_record a
+
+        <where>
+            <if test="userId != null and userId.trim() != '' ">
+                and a.user_id = #{userId}
+            </if>
+
+            <if test="createTime!=null and createTime!=''">
+                and DATE_FORMAT(a.create_time, '%Y%m') = #{createTime}
+
+            </if>
+            <if test="integralType!=null and integralType!='' ">
+                and a.integral_type = #{integralType}
+
+            </if>
+
+        </where>
+    </select>
+
+    <insert id="save" parameterType="com.wzlue.store.entity.TStoreIntegralRecordEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO t_store_integral_record
+		(
+																				`open_id`,
+																				`user_id`,
+																	`app_id`,
+																	`remarks`, 
+																	`integral`, 
+																	`create_time`, 
+																	`integral_type`
+									)
+		VALUES
+		(
+																				#{openId}, 
+																				#{userId},
+																	#{appId},
+																	#{remarks}, 
+																	#{integral}, 
+																	now(),
+																	#{integralType}
+									)
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.store.entity.TStoreIntegralRecordEntity">
+        UPDATE t_store_integral_record
+        <set>
+            <if test="openId != null">`open_id` = #{openId},</if>
+            <if test="userId != null">`user_id` = #{userId},</if>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="remarks != null">`remarks` = #{remarks},</if>
+            <if test="integral != null">`integral` = #{integral},</if>
+            <if test="createTime != null">`create_time` = #{createTime},</if>
+            <if test="integralType != null">`integral_type` = #{integralType}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM t_store_integral_record WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM t_store_integral_record WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <!---->
+
+
+    <select id="queryListByYearAndMonth" resultType="com.wzlue.store.entity.TStoreIntegralRecordEntity">
+        SELECT
+        a.id,
+        a.user_id,
+        a.open_id,
+        a.app_id,
+        a.remarks,
+        a.integral,
+        a.create_time,
+        a.integral_type,
+        b.nick_name wname
+        FROM t_store_integral_record a
+        left join wx_user b on a.user_id = b.id
+
+        <where>
+            <if test="userId != null and userId.trim() != '' ">
+                and a.user_id = #{userId}
+            </if>
+
+            <if test="createTime!=null and createTime!=''">
+                and DATE_FORMAT(a.create_time, '%Y%m') = #{createTime}
+
+            </if>
+
+            <if test="year!=null and year!=''">
+                and DATE_FORMAT(a.create_time, '%Y') = #{year}
+
+            </if>
+
+            <if test="month!=null and month!=''">
+                and DATE_FORMAT(a.create_time, '%m') = #{month}
+
+            </if>
+        </where>
+
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotalByYearAndMonth" resultType="int">
+        SELECT count(*) FROM t_store_integral_record a
+
+        <where>
+            <if test="userId != null and userId.trim() != '' ">
+                and a.user_id = #{userId}
+            </if>
+
+            <if test="createTime!=null and createTime!=''">
+                and DATE_FORMAT(a.create_time, '%Y%m') = #{createTime}
+
+            </if>
+
+            <if test="year!=null and year!=''">
+                and DATE_FORMAT(a.create_time, '%Y') = #{year}
+
+            </if>
+
+            <if test="month!=null and month!=''">
+                and DATE_FORMAT(a.create_time, '%m') = #{month}
+
+            </if>
+
+        </where>
+    </select>
+
+
+    <select id="getByUserIdType" resultType="int">
+        SELECT
+            count(*)
+        FROM
+            t_store_integral_record
+
+        WHERE
+            user_id = #{userId} AND integral_type = #{integralType}
+    </select>
+
+
+</mapper>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.draw.dao.IntegralDrawPrizeDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.draw.entity.IntegralDrawPrizeEntity" id="integralDrawPrizeMap">
+        <result property="id" column="id"/>
+        <result property="appId" column="app_id"/>
+        <result property="prize" column="prize"/>
+        <result property="probability" column="probability"/>
+        <result property="sort" column="sort"/>
+        <result property="remarks" column="remarks"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="stock" column="stock"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.draw.entity.IntegralDrawPrizeEntity">
+		SELECT * FROM integral_draw_prize WHERE id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.draw.entity.IntegralDrawPrizeEntity">
+        SELECT * FROM integral_draw_prize
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+		SELECT count(*) FROM integral_draw_prize
+	</select>
+
+    <insert id="save" parameterType="com.wzlue.draw.entity.IntegralDrawPrizeEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO integral_draw_prize
+		(
+																				`app_id`, 
+																	`prize`, 
+																	`probability`, 
+																	`sort`, 
+																	`remarks`, 
+																	`create_time`, 
+																	`update_time`, 
+																	`stock`
+									)
+		VALUES
+		(
+																				#{appId}, 
+																	#{prize}, 
+																	#{probability}, 
+																	#{sort}, 
+																	#{remarks}, 
+																	now(),
+																	#{updateTime}, 
+																	#{stock}
+									)
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.draw.entity.IntegralDrawPrizeEntity">
+        UPDATE integral_draw_prize
+        <set>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="prize != null">`prize` = #{prize},</if>
+            <if test="probability != null">`probability` = #{probability},</if>
+            <if test="sort != null">`sort` = #{sort},</if>
+            <if test="remarks != null">`remarks` = #{remarks},</if>
+            <if test="createTime != null">`create_time` = #{createTime},</if>
+            <if test="updateTime != null">`update_time` = #{updateTime},</if>
+            <if test="stock != null">`stock` = #{stock}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM integral_draw_prize WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM integral_draw_prize WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="deleteByAppId">
+		DELETE FROM integral_draw_prize WHERE app_id = #{value}
+	</delete>
+
+    <select id="queryByAppId" resultType="com.wzlue.draw.entity.IntegralDrawPrizeEntity">
+		SELECT * FROM integral_draw_prize WHERE app_id = #{value} ORDER BY sort ASC
+	</select>
+
+
+</mapper>

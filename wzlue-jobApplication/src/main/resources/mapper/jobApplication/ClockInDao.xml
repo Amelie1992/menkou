@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.jobApplication.dao.ClockInDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.jobApplication.entity.ClockInEntity" id="clockInMap">
+        <result property="id" column="id"/>
+        <result property="appId" column="app_id"/>
+        <result property="memberId" column="member_id"/>
+        <result property="recruitId" column="recruit_id"/>
+        <result property="coordinateX" column="coordinate_x"/>
+        <result property="coordinateY" column="coordinate_y"/>
+        <result property="effectiveDistance" column="effective_distance"/>
+        <result property="displayAddress" column="display_address"/>
+        <result property="address" column="address"/>
+        <result property="type" column="type"/>
+        <result property="ascription" column="ascription"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+        <!--入职用户-->
+        <association property="jobApplicationEntity" javaType="com.wzlue.jobApplication.entity.JobApplicationEntity">
+            <result property="id" column="id"/>
+            <result property="openid" column="openid"/>
+            <result property="nickName" column="nick_name"/>
+            <result property="realName" column="real_name"/>
+            <result property="phone" column="phone"/>
+            <result property="sex" column="sex"/>
+            <result property="wechatNumber" column="wechat_number"/>
+            <result property="age" column="age"/>
+            <result property="workExperience" column="work_experience"/>
+            <result property="stateFeedback" column="state_feedback"/>
+            <result property="hiredate" column="hiredate"/>
+        </association>
+        <!--门店招聘-->
+        <association property="shopRecruitmentEntity" javaType="com.wzlue.recruitment.entity.ShopRecruitmentEntity">
+            <result property="id" column="id"/>
+            <result property="recruitmentFirm" column="recruitment_firm"/>
+            <result property="logo" column="logo"/>
+            <result property="title" column="title"/>
+            <result property="salary" column="salary"/>
+        </association>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.jobApplication.entity.ClockInEntity">
+		SELECT * FROM c_clock_in
+        where id = #{value}
+	</select>
+
+    <!--根据招聘id查询打卡地址-->
+    <select id="queryRecruitClock" resultType="com.wzlue.jobApplication.entity.ClockInEntity">
+        SELECT * FROM c_clock_in
+        where recruit_id = #{recruitId} and ascription = 2
+    </select>
+
+    <!--根据入职id查询打卡地址-->
+    <select id="queryJobClock" resultType="com.wzlue.jobApplication.entity.ClockInEntity">
+        SELECT * FROM c_clock_in
+        where member_id = #{memberId}
+    </select>
+
+    <select id="queryList" resultType="com.wzlue.jobApplication.entity.ClockInEntity">
+        SELECT * FROM c_clock_in
+        <where>
+            1=1
+            <if test="recruitId!='' and recruitId!=null">
+                and recruit_id = #{recruitId}
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <!--入职员工的打卡设置列表-->
+    <select id="queryEntryList" resultMap="clockInMap">
+        SELECT *,ja.id AS jid,sr.id AS sid,cci.id AS cid
+        FROM job_application ja
+        left join shop_recruitment sr on sr.id = ja.shop_recruitment_id
+        left join c_clock_in cci on cci.member_id = ja.id
+        <where>
+            1=1
+            <if test="title!='' and title!=null">
+                and sr.title like CONCAT('%',#{title},'%')
+            </if>
+            <if test="recruitmentFirm!='' and recruitmentFirm!=null">
+                and sr.recruitment_firm like CONCAT('%',#{recruitmentFirm},'%')
+            </if>
+            <if test="nickName!='' and nickName!=null">
+                and ja.nick_name like CONCAT('%',#{nickName},'%')
+            </if>
+            <if test="realName!='' and realName!=null">
+                and ja.real_name like CONCAT('%',#{realName},'%')
+            </if>
+            <if test="phone!='' and phone!=null">
+                and ja.phone like CONCAT('%',#{phone},'%')
+            </if>
+            <if test="stateFeedback!='' and stateFeedback!=null">
+                and ja.state_feedback =#{stateFeedback}
+            </if>
+            <if test="beginTime!=null and beginTime!=''">
+                <![CDATA[  and DATE_FORMAT(ja.hiredate, '%Y-%m-%d') >=  DATE_FORMAT(#{beginTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                <![CDATA[  and DATE_FORMAT(ja.hiredate, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d') ]]>
+            </if>
+        </where>
+        <![CDATA[ and ja.state_feedback >=4 ]]>
+            and ja.del_flag = 2
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY cci.del_flag desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        SELECT count(*) FROM c_clock_in cci
+        left join job_application ja on cci.member_id = ja.openid
+        left join shop_recruitment sr on cci.recruit_id = sr.id
+        <where>
+            1=1
+            <if test="title!='' and title!=null">
+                and sr.title like CONCAT('%',#{title},'%')
+            </if>
+            <if test="recruitmentFirm!='' and recruitmentFirm!=null">
+                and sr.recruitment_firm like CONCAT('%',#{recruitmentFirm},'%')
+            </if>
+            <if test="nickName!='' and nickName!=null">
+                and ja.nick_name like CONCAT('%',#{nickName},'%')
+            </if>
+            <if test="realName!='' and realName!=null">
+                and ja.real_name like CONCAT('%',#{realName},'%')
+            </if>
+            <if test="phone!='' and phone!=null">
+                and ja.phone like CONCAT('%',#{phone},'%')
+            </if>
+            <if test="stateFeedback!='' and stateFeedback!=null">
+                and ja.state_feedback =#{stateFeedback}
+            </if>
+            <if test="beginTime!=null and beginTime!=''">
+                <![CDATA[   and DATE_FORMAT(ja.hiredate, '%Y-%m-%d') >=  DATE_FORMAT(#{beginTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                <![CDATA[  and DATE_FORMAT(ja.hiredate, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d') ]]>
+            </if>
+        </where>
+        <![CDATA[and ja.state_feedback >=4 ]]>
+        and cci.del_flag = 2
+	</select>
+
+    <insert id="save" parameterType="com.wzlue.jobApplication.entity.ClockInEntity">
+		INSERT INTO c_clock_in
+		(
+													`id`, 
+																	`app_id`, 
+																	`member_id`, 
+																	`recruit_id`, 
+																	`coordinate_x`, 
+																	`coordinate_y`, 
+																	`effective_distance`, 
+																	`display_address`, 
+																	`address`,
+																	`type`,
+																	`ascription`,
+																	`del_flag`, 
+																	`create_id`, 
+																	`create_date`, 
+																	`update_id`, 
+																	`update_date`
+									)
+		VALUES
+		(
+													#{id}, 
+																	#{appId}, 
+																	#{memberId}, 
+																	#{recruitId}, 
+																	#{coordinateX}, 
+																	#{coordinateY}, 
+																	#{effectiveDistance}, 
+																	#{displayAddress},
+																	#{address},
+																	#{type},
+																	#{ascription},
+																	'2',
+																	#{createId}, 
+																	#{createDate},
+																	#{updateId}, 
+																	#{updateDate}
+									)
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.jobApplication.entity.ClockInEntity">
+        UPDATE c_clock_in
+        <set>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="memberId != null">`member_id` = #{memberId},</if>
+            <if test="recruitId != null">`recruit_id` = #{recruitId},</if>
+            <if test="coordinateX != null">`coordinate_x` = #{coordinateX},</if>
+            <if test="coordinateY != null">`coordinate_y` = #{coordinateY},</if>
+            <if test="effectiveDistance != null">`effective_distance` = #{effectiveDistance},</if>
+            <if test="displayAddress != null">`display_address` = #{displayAddress},</if>
+            <if test="address != null">`address` = #{address},</if>
+            <if test="type != null">`type` = #{type},</if>
+            <if test="delFlag != null">`del_flag` = #{delFlag},</if>
+            <if test="createId != null">`create_id` = #{createId},</if>
+            <if test="createDate != null">`create_date` = #{createDate},</if>
+            <if test="updateId != null">`update_id` = #{updateId},</if>
+            <if test="updateDate != null">`update_date` = #{updateDate}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!--软删改状态-->
+    <update id="updateDel" parameterType="com.wzlue.jobApplication.entity.ClockInEntity">
+        UPDATE c_clock_in
+        <set>
+            <if test="delFlag != null">`del_flag` = 1</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!--批量软删-->
+    <update id="updateBatch">
+        UPDATE c_clock_in
+        set `del_flag` = 1
+        WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <delete id="deleteBatch">
+        DELETE FROM c_clock_in WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="delete">
+		DELETE FROM c_clock_in WHERE id = #{value}
+	</delete>
+
+</mapper>

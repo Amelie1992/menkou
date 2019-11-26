@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/wzlue-app/wzlue-app.iml" filepath="$PROJECT_DIR$/wzlue-app/wzlue-app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wzlue-common/wzlue-common.iml" filepath="$PROJECT_DIR$/wzlue-common/wzlue-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wzlue-doorway/wzlue-doorway.iml" filepath="$PROJECT_DIR$/wzlue-doorway/wzlue-doorway.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wzlue-draw/wzlue-draw.iml" filepath="$PROJECT_DIR$/wzlue-draw/wzlue-draw.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wzlue-generator/wzlue-generator.iml" filepath="$PROJECT_DIR$/wzlue-generator/wzlue-generator.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wzlue-jobApplication/wzlue-jobApplication.iml" filepath="$PROJECT_DIR$/wzlue-jobApplication/wzlue-jobApplication.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wzlue-menkou.iml" filepath="$PROJECT_DIR$/wzlue-menkou.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wzlue-notice/wzlue-notice.iml" filepath="$PROJECT_DIR$/wzlue-notice/wzlue-notice.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wzlue-provideStaff/wzlue-provideStaff.iml" filepath="$PROJECT_DIR$/wzlue-provideStaff/wzlue-provideStaff.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wzlue-qrcode/wzlue-qrcode.iml" filepath="$PROJECT_DIR$/wzlue-qrcode/wzlue-qrcode.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wzlue-recruitment/wzlue-recruitment.iml" filepath="$PROJECT_DIR$/wzlue-recruitment/wzlue-recruitment.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wzlue-schedule/wzlue-schedule.iml" filepath="$PROJECT_DIR$/wzlue-schedule/wzlue-schedule.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wzlue-smsCode/wzlue-smsCode.iml" filepath="$PROJECT_DIR$/wzlue-smsCode/wzlue-smsCode.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wzlue-store/wzlue-store.iml" filepath="$PROJECT_DIR$/wzlue-store/wzlue-store.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wzlue-sys/wzlue-sys.iml" filepath="$PROJECT_DIR$/wzlue-sys/wzlue-sys.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wzlue-web/wzlue-web.iml" filepath="$PROJECT_DIR$/wzlue-web/wzlue-web.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wzlue-wechat/wzlue-wechat.iml" filepath="$PROJECT_DIR$/wzlue-wechat/wzlue-wechat.iml" />
+    </modules>
+  </component>
+</project>

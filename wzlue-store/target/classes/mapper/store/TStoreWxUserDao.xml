@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.store.dao.TStoreWxUserDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.wechat.entity.WxUserEntity" id="wxUserMap">
+        <result property="id" column="id"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+        <result property="remark" column="remark"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="tenantId" column="tenant_id"/>
+        <result property="appId" column="app_id"/>
+        <result property="appType" column="app_type"/>
+        <result property="subscribe" column="subscribe"/>
+        <result property="subscribeScene" column="subscribe_scene"/>
+        <result property="subscribeTime" column="subscribe_time"/>
+        <result property="subscribeNum" column="subscribe_num"/>
+        <result property="cancelSubscribeTime" column="cancel_subscribe_time"/>
+        <result property="openId" column="open_id"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="sex" column="sex"/>
+        <result property="city" column="city"/>
+        <result property="country" column="country"/>
+        <result property="province" column="province"/>
+        <result property="phone" column="phone"/>
+        <result property="language" column="language"/>
+        <result property="headimgUrl" column="headimg_url"/>
+        <result property="unionId" column="union_id"/>
+        <result property="groupId" column="group_id"/>
+        <result property="tagidList" column="tagid_list" typeHandler="com.wzlue.common.mybatis.handler.ArrayLongTypeHandler" jdbcType="VARCHAR"/>
+        <result property="qrSceneStr" column="qr_scene_str"/>
+        <result property="latitude" column="latitude"/>
+        <result property="longitude" column="longitude"/>
+        <result property="precision" column="precision"/>
+        <result property="sessionKey" column="session_key"/>
+        <result property="integral" column="integral"/>
+    </resultMap>
+
+
+    <select id="queryObjectByUserId" resultType="com.wzlue.wechat.entity.WxUserEntity">
+        SELECT * FROM wx_user WHERE id = #{userId}
+    </select>
+
+    <select id="queryList" resultType="com.wzlue.wechat.entity.WxUserEntity">
+
+
+
+        SELECT  a.*,b.name wname,
+                (case
+                    when b.exp_type = 1 then 1
+                    when b.exp_date > now() then 1
+                    else 0
+                end) appstate
+
+        FROM wx_user a
+        left join wx_app b on a.app_id = b.id  AND b.del_flag = 0
+
+        <where>
+            <if test="tagid_list != null">
+                AND tagid_list = #{tagidList}
+            </if>
+            <if test="appId != null and appId.trim() != '' ">
+                AND app_id = #{appId}
+            </if>
+            <if test="nickName != null and nickName.trim() != '' ">
+                AND nick_name like concat('%',#{nickName},'%')
+            </if>
+            <if test="sceneId != null and sceneId != ''">
+                and scene_id = #{sceneId}
+            </if>
+            <if test="createTime!=null and createTime!=''">
+                and DATE_FORMAT(a.create_date, '%Y%m') = #{createTime}
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.app_id,a.id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        SELECT count(*) FROM wx_user
+        <where>
+            <if test="tagid_list != null">
+                AND tagid_list = #{tagidList}
+            </if>
+            <if test="appId != null and appId.trim() != ''">
+                AND app_id = #{appId}
+            </if>
+            <if test="nickName != null and nickName.trim() != '' ">
+                AND nick_name like concat('%',#{nickName},'%')
+            </if>
+            <if test="sceneId != null and sceneId != ''">
+                and scene_id = #{sceneId}
+            </if>
+            <if test="createTime!=null and createTime!=''">
+                and DATE_FORMAT(create_date, '%Y%m') = #{createTime}
+            </if>
+        </where>
+    </select>
+
+    <select id="checkUserOfWxAppActive" resultType="int">
+        SELECT count(*) FROM wx_app
+        <where>
+            enabled = 0
+            AND del_flag = 0
+            AND (exp_type = 1 OR exp_date > now())
+            <if test="appId != null and appId.trim() != ''">
+                AND id = #{appId}
+            </if>
+        </where>
+
+    </select>
+
+
+    <update id="update" parameterType="com.wzlue.wechat.entity.WxUserEntity">
+        UPDATE wx_user
+        <set>
+            <if test="createId != null">`create_id` = #{createId},</if>
+            <if test="createDate != null">`create_date` = #{createDate},</if>
+            <if test="updateId != null">`update_id` = #{updateId},</if>
+            <if test="updateDate != null">`update_date` = #{updateDate},</if>
+            <if test="remark != null">`remark` = #{remark},</if>
+            <if test="delFlag != null">`del_flag` = #{delFlag},</if>
+            <if test="tenantId != null">`tenant_id` = #{tenantId},</if>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="appType != null">`app_type` = #{appType},</if>
+            <if test="subscribe != null">`subscribe` = #{subscribe},</if>
+            <if test="subscribeScene != null">`subscribe_scene` = #{subscribeScene},</if>
+            <if test="subscribeTime != null">`subscribe_time` = #{subscribeTime},</if>
+            <if test="subscribeNum != null">`subscribe_num` = #{subscribeNum},</if>
+            <if test="cancelSubscribeTime != null">`cancel_subscribe_time` = #{cancelSubscribeTime},</if>
+            <if test="openId != null">`open_id` = #{openId},</if>
+            <if test="nickName != null">`nick_name` = #{nickName},</if>
+            <if test="sex != null">`sex` = #{sex},</if>
+            <if test="city != null">`city` = #{city},</if>
+            <if test="country != null">`country` = #{country},</if>
+            <if test="province != null">`province` = #{province},</if>
+            <if test="phone != null">`phone` = #{phone},</if>
+            <if test="language != null">`language` = #{language},</if>
+            <if test="headimgUrl != null">`headimg_url` = #{headimgUrl},</if>
+            <if test="unionId != null">`union_id` = #{unionId},</if>
+            <if test="groupId != null">`group_id` = #{groupId},</if>
+            <if test="tagidList != null">`tagid_list` = #{tagidList},</if>
+            <if test="qrSceneStr != null">`qr_scene_str` = #{qrSceneStr},</if>
+            <if test="latitude != null">`latitude` = #{latitude},</if>
+            <if test="longitude != null">`longitude` = #{longitude},</if>
+            <if test="precision != null">`precision` = #{precision},</if>
+            <if test="sessionKey != null">`session_key` = #{sessionKey},</if>
+            <if test="integral != null">`integral` = #{integral},</if>
+            <if test="newTask != null">`new_task` = #{newTask},</if>
+            <if test="tipNum != null">`tip_num` = #{tipNum}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+
+
+
+    <sql id="sort_before">
+        set @rownum=0;
+        SELECT
+        @rownum:=@rownum+1 as rownum,x.* from
+        (
+
+    </sql>
+
+    <sql id="sort_after">
+        ) x
+    </sql>
+
+    <sql id="selectList">
+        SELECT
+        a.*,
+        b.name wname
+        FROM wx_user a
+        left join wx_app b on a.app_id = b.id  AND b.del_flag = 0
+    </sql>
+
+    <select id="queryToExportByIds"  resultType="com.wzlue.wechat.entity.WxUserEntity">
+        <include refid="sort_before"/>
+        <include refid="selectList"/>
+        <where>
+            1=1 and a.id in
+            <foreach item="id" collection="array" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>
+        ORDER BY a.create_date desc
+        <include refid="sort_after"/>
+    </select>
+
+    <select id="queryToExport"  resultType="com.wzlue.wechat.entity.WxUserEntity">
+        <include refid="sort_before"/>
+        <include refid="selectList"/>
+        <where>
+            1=1
+            <if test="appId != null and appId.trim() != '' ">
+                AND app_id = #{appId}
+            </if>
+            <if test="sceneId != null and sceneId != ''">
+                and scene_id = #{sceneId}
+            </if>
+            <if test="nickName != null and nickName.trim() != '' ">
+                AND nick_name like concat('%',#{nickName},'%')
+            </if>
+            <if test="createTime!=null and createTime!=''">
+                and DATE_FORMAT(a.create_date, '%Y%m') = #{createTime}
+            </if>
+        </where>
+        ORDER BY a.create_date desc
+        <include refid="sort_after"/>
+    </select>
+
+
+</mapper>

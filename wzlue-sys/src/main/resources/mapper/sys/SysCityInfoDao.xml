@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.sys.dao.SysCityInfoDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.sys.entity.SysCityInfoEntity" id="sysCityInfoMap">
+        <result property="cityKey" column="city_key"/>
+        <result property="cityId" column="city_id"/>
+        <result property="cityCode" column="city_code"/>
+        <result property="subCityCode" column="sub_city_code"/>
+        <result property="cityName" column="city_name"/>
+        <result property="areaCode" column="area_code"/>
+        <result property="postalcode" column="postalcode"/>
+        <result property="status" column="status"/>
+        <result property="endFlag" column="end_flag"/>
+        <result property="longitude" column="longitude"/>
+        <result property="latitude" column="latitude"/>
+        <result property="longitudeTrue" column="longitude_true"/>
+        <result property="latitudeTrue" column="latitude_true"/>
+        <result property="rankNo" column="rank_no"/>
+        <result property="showFlag" column="show_flag"/>
+        <result property="deleteFlag" column="delete_flag"/>
+        <result property="addTime" column="add_time"/>
+        <result property="modTime" column="mod_time"/>
+        <result property="remarks" column="remarks"/>
+    </resultMap>
+	<!--根据上级地市编码查询-->
+	<select id="queryByCode" resultType="com.wzlue.sys.entity.SysCityInfoEntity">
+		SELECT c1.city_id AS cityId,c1.city_name AS cityName FROM sys_city_info AS c1
+		WHERE  sub_city_code=#{subCityCode}
+	</select>
+	
+	
+	<!-- 根据名字查询省 -->
+	<select id="queryProvinceByName" resultType="com.wzlue.sys.entity.SysCityInfoEntity">
+		SELECT c1.city_id AS cityId,c1.city_name AS cityName FROM sys_city_info AS c1
+		WHERE  city_name=#{cityName} and c1.subCityCode=-1
+	</select>
+
+    <!-- 根据编码查询名字 -->
+    <select id="queryNameByCode" resultType="com.wzlue.sys.entity.SysCityInfoEntity">
+		SELECT * FROM sys_city_info
+        <where>
+            <if test="subCityCode!=null and subCityCode!=''">and sub_city_code = #{subCityCode}</if>
+            <if test="cityCode!=null and cityCode!=''">and city_code = #{cityCode}</if>
+        </where>
+	</select>
+
+
+</mapper>

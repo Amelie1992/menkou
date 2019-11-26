@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.provideStaff.dao.ProvideStaffDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.provideStaff.entity.ProvideStaffEntity" id="provideStaffMap">
+        <result property="id" column="id"/>
+        <result property="shopRecruitmentId" column="shop_recruitment_id"/>
+        <result property="number" column="number"/>
+        <result property="minAge" column="min_age"/>
+        <result property="maxAge" column="max_age"/>
+        <result property="type" column="type"/>
+        <result property="province" column="province"/>
+        <result property="city" column="city"/>
+        <result property="area" column="area"/>
+        <result property="street" column="street"/>
+        <result property="arrivalTime" column="arrival_time"/>
+        <result property="remarks" column="remarks"/>
+        <result property="contacts" column="contacts"/>
+        <result property="phone" column="phone"/>
+        <result property="appId" column="app_id"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+        <result property="state" column="state"/>
+        <result property="msg" column="msg"/>
+        <association property="shopRecruitment" javaType="com.wzlue.recruitment.entity.ShopRecruitmentEntity"
+                     column="shop_recruitment_id" select="com.wzlue.recruitment.dao.ShopRecruitmentDao.queryObject"
+                     autoMapping="true"/>
+    </resultMap>
+
+    <select id="queryObject" resultMap="provideStaffMap">
+		SELECT
+		a.* ,
+		(select b.shortname from sys_area b WHERE b.id=a.province) provinceStr,
+		(select b.shortname from sys_area b WHERE b.id=a.city) cityStr
+		FROM provide_staff a
+		WHERE id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.provideStaff.entity.ProvideStaffEntity">
+    SELECT
+    a.*,
+    b.recruitment_firm recruitmentFirm,
+    b.title recruitmentTitle
+    FROM provide_staff a
+    left join shop_recruitment b on a.shop_recruitment_id = b.id
+    <where>
+        1=1
+        <if test="appId!=null and appId!=''">
+            and a.app_id = #{appId}
+        </if>
+        <if test="state!=null and state!=''">
+            and a.state = #{state}
+        </if>
+        <if test="title!=null and title!=''">
+            and b.title like CONCAT('%',#{title},'%')
+        </if>
+        <if test="beginTime!=null and beginTime!=''">
+            <![CDATA[ and DATE_FORMAT(a.create_date, '%Y-%m-%d') >=  DATE_FORMAT(#{beginTime}, '%Y-%m-%d') ]]>
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            <![CDATA[ and DATE_FORMAT(a.create_date, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d') ]]>
+        </if>
+    </where>
+    <choose>
+        <when test="sidx != null and sidx.trim() != ''">
+            ORDER BY ${sidx} ${order}
+        </when>
+        <otherwise>
+            ORDER BY id desc
+        </otherwise>
+    </choose>
+    <if test="offset != null and limit != null">
+        LIMIT #{offset}, #{limit}
+    </if>
+</select>
+
+    <select id="queryTotal" resultType="int">
+        SELECT count(*) FROM provide_staff a
+        left join shop_recruitment b on a.shop_recruitment_id = b.id
+        <where>
+            1=1
+            <if test="appId!=null and appId!=''">
+                and a.app_id = #{appId}
+            </if>
+            <if test="state!=null and state!=''">
+                and a.state = #{state}
+            </if>
+            <if test="title!=null and title!=''">
+                and b.title like CONCAT('%',#{title},'%')
+            </if>
+            <if test="beginTime!=null and beginTime!=''">
+                <![CDATA[ and DATE_FORMAT(a.create_date, '%Y-%m-%d') >=  DATE_FORMAT(#{beginTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                <![CDATA[ and DATE_FORMAT(a.create_date, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d') ]]>
+            </if>
+        </where>
+    </select>
+
+    <select id="examineList" resultType="com.wzlue.provideStaff.entity.ProvideStaffEntity">
+        SELECT
+        a.*,
+        b.recruitment_firm recruitmentFirm,
+        b.title recruitmentTitle
+        FROM provide_staff a
+        inner join shop_recruitment b on a.shop_recruitment_id = b.id
+        <where>
+            1=1
+            <if test="appId!=null and appId!=''">
+                and b.app_id = #{appId}
+            </if>
+            <if test="state!=null and state!=''">
+                and a.state = #{state}
+            </if>
+            <if test="title!=null and title!=''">
+                and b.title like CONCAT('%',#{title},'%')
+            </if>
+            <if test="beginTime!=null and beginTime!=''">
+                <![CDATA[ and DATE_FORMAT(a.create_date, '%Y-%m-%d') >=  DATE_FORMAT(#{beginTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                <![CDATA[ and DATE_FORMAT(a.create_date, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d') ]]>
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="examineTotal" resultType="int">
+        SELECT count(*) FROM provide_staff a
+        inner join shop_recruitment b on a.shop_recruitment_id = b.id
+        <where>
+            1=1
+            <if test="appId!=null and appId!=''">
+                and b.app_id = #{appId}
+            </if>
+            <if test="state!=null and state!=''">
+                and a.state = #{state}
+            </if>
+            <if test="title!=null and title!=''">
+                and b.title like CONCAT('%',#{title},'%')
+            </if>
+            <if test="beginTime!=null and beginTime!=''">
+                <![CDATA[ and DATE_FORMAT(a.create_date, '%Y-%m-%d') >=  DATE_FORMAT(#{beginTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                <![CDATA[ and DATE_FORMAT(a.create_date, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d') ]]>
+            </if>
+        </where>
+    </select>
+
+    <insert id="save" parameterType="com.wzlue.provideStaff.entity.ProvideStaffEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO provide_staff
+		(
+				`shop_recruitment_id`,
+				`number`,
+				`min_age`,
+				`max_age`,
+				`type`,
+				`province`,
+				`city`,
+				`area`,
+				`street`,
+				`arrival_time`,
+				`remarks`,
+				`contacts`,
+				`phone`,
+				`app_id`,
+				`del_flag`,
+				`create_id`,
+				`create_date`,
+				`update_id`,
+				`update_date`,
+				`state`,
+				`msg`
+									)
+		VALUES
+		(
+				#{shopRecruitmentId},
+				#{number},
+				#{minAge},
+				#{maxAge},
+				#{type},
+				#{province},
+				#{city},
+				#{area},
+				#{street},
+				#{arrivalTime},
+				#{remarks},
+				#{contacts},
+				#{phone},
+				#{appId},
+				#{delFlag},
+				#{createId},
+				now(),
+				#{updateId},
+				#{updateDate},
+				1,
+				#{msg}
+									)
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.provideStaff.entity.ProvideStaffEntity">
+        UPDATE provide_staff
+        <set>
+            <if test="shopRecruitmentId != null">`shop_recruitment_id`= #{shopRecruitmentId},</if>
+            <if test="number != null">`number` = #{number},</if>
+            <if test="minAge != null">`min_age` = #{minAge},</if>
+            <if test="maxAge != null">`max_age` = #{maxAge},</if>
+            <if test="type != null">`type` = #{type},</if>
+            <if test="province != null">`province` = #{province},</if>
+            <if test="city != null">`city` = #{city},</if>
+            <if test="area != null">`area` = #{area},</if>
+            <if test="street != null">`street` = #{street},</if>
+            <if test="arrivalTime != null">`arrival_time` = #{arrivalTime},</if>
+            <if test="remarks != null">`remarks` = #{remarks},</if>
+            <if test="contacts != null">`contacts` = #{contacts},</if>
+            <if test="phone != null">`phone` = #{phone},</if>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="delFlag != null">`del_flag` = #{delFlag},</if>
+            <if test="createId != null">`create_id` = #{createId},</if>
+            <if test="createDate != null">`create_date` = #{createDate},</if>
+            <if test="updateId != null">`update_id` = #{updateId},</if>
+            <if test="updateDate != null">`update_date` = #{updateDate},</if>
+            <if test="state != null">`state` = #{state},</if>
+            <if test="msg != null">`msg` = #{msg}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM provide_staff WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM provide_staff WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

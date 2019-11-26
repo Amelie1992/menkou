@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.sys.dao.SysAreaDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.sys.entity.SysAreaEntity" id="sysAreaMap">
+        <result property="id" column="id"/>
+        <result property="areaname" column="areaname"/>
+        <result property="parentid" column="parentid"/>
+        <result property="shortname" column="shortname"/>
+        <result property="areacode" column="areacode"/>
+        <result property="zipcode" column="zipcode"/>
+        <result property="pinyin" column="pinyin"/>
+        <result property="lng" column="lng"/>
+        <result property="lat" column="lat"/>
+        <result property="level" column="level"/>
+        <result property="position" column="position"/>
+        <result property="sort" column="sort"/>
+    </resultMap>
+
+    <!--根据上级地市编码查询-->
+    <select id="queryByCode" resultType="com.wzlue.sys.entity.SysAreaEntity">
+		SELECT sa.id,sa.areaname,sa.parentid,sa.shortname FROM sys_area sa
+        WHERE sa.parentid = #{parentid}
+	</select>
+
+    <!-- 根据编码查询名字 -->
+    <select id="queryNameByCode" resultType="com.wzlue.sys.entity.SysAreaEntity">
+        SELECT * FROM sys_area
+        <where>
+            <if test="id!=null and id!=''">and id = #{id}</if>
+        </where>
+    </select>
+
+    <select id="queryObject" resultType="com.wzlue.sys.entity.SysAreaEntity">
+		SELECT * FROM sys_area WHERE id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.sys.entity.SysAreaEntity">
+        SELECT * FROM sys_area
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+
+    </select>
+
+    <select id="areaList" resultType="com.wzlue.sys.entity.SysAreaEntity">
+        SELECT
+        id,
+        areaname,
+        parentid,
+        shortname,
+        level
+        FROM sys_area
+        <where>
+            <if test="parentid!= null and parentid!=''">`parentid` = #{parentid}</if>
+        </where>
+
+    </select>
+
+    <select id="queryTotal" resultType="int">
+		SELECT count(*) FROM sys_area
+	</select>
+
+    <insert id="save" parameterType="com.wzlue.sys.entity.SysAreaEntity">
+		INSERT INTO sys_area
+		(
+				`id`,
+				`areaname`,
+				`parentid`,
+				`shortname`,
+				`areacode`,
+				`zipcode`,
+				`pinyin`,
+				`lng`,
+				`lat`,
+				`level`,
+				`position`,
+				`sort`
+									)
+		VALUES
+		(
+				#{id},
+				#{areaname},
+				#{parentid},
+				#{shortname},
+				#{areacode},
+				#{zipcode},
+				#{pinyin},
+				#{lng},
+				#{lat},
+				#{level},
+				#{position},
+				#{sort}
+									)
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.sys.entity.SysAreaEntity">
+        UPDATE sys_area
+        <set>
+            <if test="areaname != null">`areaname` = #{areaname},</if>
+            <if test="parentid != null">`parentid` = #{parentid},</if>
+            <if test="shortname != null">`shortname` = #{shortname},</if>
+            <if test="areacode != null">`areacode` = #{areacode},</if>
+            <if test="zipcode != null">`zipcode` = #{zipcode},</if>
+            <if test="pinyin != null">`pinyin` = #{pinyin},</if>
+            <if test="lng != null">`lng` = #{lng},</if>
+            <if test="lat != null">`lat` = #{lat},</if>
+            <if test="level != null">`level` = #{level},</if>
+            <if test="position != null">`position` = #{position},</if>
+            <if test="sort != null">`sort` = #{sort}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM sys_area WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM sys_area WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="queryProvincesList" resultType="com.wzlue.sys.entity.SysAreaEntity">
+        SELECT
+        id,
+        areaname
+        FROM sys_area
+        <where>
+            <if test=" parentid!= null and parentid!=''">
+                and parentid = #{parentid}
+            </if>
+            <if test=" level!= null and level!=''">
+                and level = #{level}
+            </if>
+        </where>
+
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id asc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryProvincesListTotal" resultType="int">
+        SELECT
+        count(*)
+        FROM sys_area
+        <where>
+            <if test=" parentid!= null and parentid!=''">
+                and parentid = #{parentid}
+            </if>
+            <if test=" level!= null and level!=''">
+                and level = #{level}
+            </if>
+        </where>
+	</select>
+
+    <!-- 根据名字查编码-->
+    <select id="queryCodeByName" resultType="com.wzlue.sys.entity.SysAreaEntity">
+        SELECT * FROM sys_area WHERE areaname = #{name} OR shortname = #{name}
+    </select>
+</mapper>

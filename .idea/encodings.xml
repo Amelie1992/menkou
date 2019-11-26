@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/wzlue-app" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/wzlue-common" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/wzlue-doorway" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/wzlue-draw" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/wzlue-generator" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/wzlue-jobApplication" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/wzlue-notice" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/wzlue-provideStaff" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/wzlue-qrcode" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/wzlue-recruitment" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/wzlue-schedule" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/wzlue-smsCode" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/wzlue-store" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/wzlue-sys" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/wzlue-web" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/wzlue-wechat" charset="UTF-8" />
+  </component>
+</project>

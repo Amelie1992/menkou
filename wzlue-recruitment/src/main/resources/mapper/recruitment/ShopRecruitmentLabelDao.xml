@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.recruitment.dao.ShopRecruitmentLabelDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.recruitment.entity.ShopRecruitmentLabelEntity" id="shopRecruitmentLabelMap">
+        <result property="id" column="id"/>
+        <result property="shopRecruitmentId" column="shop_recruitment_id"/>
+        <result property="configId" column="config_id"/>
+        <result property="configValue" column="config_value"/>
+        <result property="appId" column="app_id"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.recruitment.entity.ShopRecruitmentLabelEntity">
+		SELECT * FROM shop_recruitment_label WHERE id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.recruitment.entity.ShopRecruitmentLabelEntity">
+        SELECT * FROM shop_recruitment_label
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+		SELECT count(*) FROM shop_recruitment_label
+	</select>
+
+    <insert id="save" parameterType="com.wzlue.recruitment.entity.ShopRecruitmentLabelEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO shop_recruitment_label
+		(
+            `shop_recruitment_id`,
+            `config_id`,
+            `config_value`,
+            `app_id`,
+            `create_id`,
+            `create_date`,
+            `update_id`,
+            `update_date`
+									)
+		VALUES
+		(
+            #{shopRecruitmentId},
+            #{configId},
+            #{configValue},
+            #{appId},
+            #{createId},
+            #{createDate},
+            #{updateId},
+            #{updateDate}
+									)
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.recruitment.entity.ShopRecruitmentLabelEntity">
+        UPDATE shop_recruitment_label
+        <set>
+            <if test="shopRecruitmentId != null">`shop_recruitment_id` = #{shopRecruitmentId},</if>
+            <if test="configId != null">`config_id` = #{configId},</if>
+            <if test="configValue != null">`config_value` = #{configValue},</if>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="createId != null">`create_id` = #{createId},</if>
+            <if test="createDate != null">`create_date` = #{createDate},</if>
+            <if test="updateId != null">`update_id` = #{updateId},</if>
+            <if test="updateDate != null">`update_date` = #{updateDate}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM shop_recruitment_label WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM shop_recruitment_label WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="saveList" parameterType="java.util.List">
+        INSERT INTO shop_recruitment_label
+        (
+        `shop_recruitment_id`,
+        `config_id`,
+        `config_value`,
+        `app_id`,
+        `create_id`,
+        `create_date`,
+        `update_id`,
+        `update_date`
+        )
+        VALUES
+        <foreach item="item" collection="list" separator=",">
+            (
+            #{item.shopRecruitmentId},
+            #{item.configId},
+            #{item.configValue},
+            #{item.appId},
+            #{item.createId},
+            now(),
+            #{item.updateId},
+            #{item.updateDate}
+            )
+        </foreach>
+    </insert>
+
+    <select id="queryByRecruitmentId" resultType="com.wzlue.recruitment.entity.ShopRecruitmentLabelEntity">
+        SELECT * FROM shop_recruitment_label WHERE shop_recruitment_id = #{id}
+    </select>
+
+    <delete id="deleteByRecruitmentId">
+		DELETE FROM shop_recruitment_label WHERE shop_recruitment_id = #{recruitmentId}
+	</delete>
+</mapper>

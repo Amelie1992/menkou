@@ -1,0 +1,63 @@
+server:
+  port: 10002
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driverClassName: com.mysql.jdbc.Driver
+    druid:
+      first:  #数据源1
+        url: jdbc:mysql://122.112.177.49:3306/menkou?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8
+        username: menkou
+        password: yG8S3RiES5BKWKYX
+      second:  #数据源2
+        url: jdbc:mysql://122.112.177.49:3306/menkou?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8
+        username: menkou
+        password: yG8S3RiES5BKWKYX
+      initial-size: 10
+      max-active: 100
+      min-idle: 10
+      max-wait: 60000
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1 FROM DUAL
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      stat-view-servlet:
+        enabled: true
+        url-pattern: /druid/*
+        #login-username: admin
+        #login-password: admin
+      filter:
+        stat:
+          log-slow-sql: true
+          slow-sql-millis: 1000
+          merge-sql: true
+        wall:
+          config:
+            multi-statement-allow: true
+
+# 文件上传
+fileupload:
+  server: http://localhost:8088/app/fileupload
+  filepath: d:/file
+ueditor:
+  imageActionName: uploadimage
+  imageUrlPrefix: http://localhost:8088/app/fileupload
+  imagePath: /fileupload/
+  imageFieldName: upfile
+  imageMaxSize: 2048
+# 日志
+logback:
+  logdir: D://wzlue-logs/wzlue-app
+  appname: wzlue-app
+  logCount: 10000 #日志阈值
+# 授权host
+authurl:
+  host: http://api.momentinlet.com.com
+
+#        url: jdbc:mysql://122.112.206.46:3306/menkou?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8
+#        username: menkou
+#        password: fMd7iHCPmpiJm6P6

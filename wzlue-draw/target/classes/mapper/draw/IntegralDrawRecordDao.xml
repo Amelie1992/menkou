@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.draw.dao.IntegralDrawRecordDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.draw.entity.IntegralDrawRecordEntity" id="integralDrawRecordMap">
+        <result property="id" column="id"/>
+        <result property="openid" column="openid"/>
+        <result property="integralRecordId" column="integral_record_id"/>
+        <result property="consumeIntegral" column="consume_integral"/>
+        <result property="prizeId" column="prize_id"/>
+        <result property="prizeName" column="prize_name"/>
+        <result property="prizeSort" column="prize_sort"/>
+        <result property="type" column="type"/>
+        <result property="state" column="state"/>
+        <result property="createTime" column="create_time"/>
+        <result property="exchangeTime" column="exchange_time"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.draw.entity.IntegralDrawRecordEntity">
+		SELECT * FROM integral_draw_record WHERE id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.draw.entity.IntegralDrawRecordEntity">
+        SELECT
+        a.*,
+        b.nick_name wname
+        FROM integral_draw_record a
+        left join wx_user b on a.openid = b.id
+        <where>
+            1=1
+            <if test="openid!=null and openid!=''">
+                and a.openid = #{openid}
+            </if>
+            <if test="type!=null and type!=''">
+                and a.`type` = #{type}
+            </if>
+            <if test="state!=null and state!=''">
+                and a.`state` = #{state}
+            </if>
+            <if test="createTime!=null and createTime!=''">
+                and DATE_FORMAT(a.create_time, '%Y%m') = #{createTime}
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        SELECT count(*) FROM integral_draw_record
+        <where>
+            1=1
+            <if test="openid!=null and openid!=''">
+                and openid = #{openid}
+            </if>
+            <if test="type!=null and type!=''">
+                and `type` = #{type}
+            </if>
+            <if test="state!=null and state!=''">
+                and `state` = #{state}
+            </if>
+            <if test="createTime!=null and createTime!=''">
+                and DATE_FORMAT(create_time, '%Y%m') = #{createTime}
+            </if>
+        </where>
+    </select>
+
+    <insert id="save" parameterType="com.wzlue.draw.entity.IntegralDrawRecordEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO integral_draw_record
+		(
+																				`openid`, 
+																	`integral_record_id`, 
+																	`consume_integral`, 
+																	`prize_id`, 
+																	`prize_name`, 
+																	`prize_sort`, 
+																	`type`,
+																	`state`,
+																	`create_time`,
+																	`exchange_time`
+									)
+		VALUES
+		(
+																				#{openid}, 
+																	#{integralRecordId}, 
+																	#{consumeIntegral}, 
+																	#{prizeId}, 
+																	#{prizeName}, 
+																	#{prizeSort}, 
+																	#{type},
+																	1,
+																	now(),
+																	#{exchangeTime}
+									)
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.draw.entity.IntegralDrawRecordEntity">
+        UPDATE integral_draw_record
+        <set>
+            <if test="openid != null">`openid` = #{openid},</if>
+            <if test="integralRecordId != null">`integral_record_id` = #{integralRecordId},</if>
+            <if test="consumeIntegral != null">`consume_integral` = #{consumeIntegral},</if>
+            <if test="prizeId != null">`prize_id` = #{prizeId},</if>
+            <if test="prizeName != null">`prize_name` = #{prizeName},</if>
+            <if test="prizeSort != null">`prize_sort` = #{prizeSort},</if>
+            <if test="type != null">`type` = #{type},</if>
+            <if test="state != null">`state` = #{state},</if>
+            <if test="createTime != null">`create_time` = #{createTime},</if>
+            <if test="exchangeTime != null">`exchange_time` = #{exchangeTime}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM integral_draw_record WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM integral_draw_record WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <update id="exchangeBatch">
+        UPDATE integral_draw_record
+        SET state = 2,exchange_time = now()
+        WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>

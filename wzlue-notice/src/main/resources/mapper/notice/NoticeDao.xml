@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.notice.dao.NoticeDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.notice.entity.NoticeEntity" id="noticeMap">
+        <result property="id" column="id"/>
+        <result property="belongTo" column="belong_to"/>
+        <result property="type" column="type"/>
+        <result property="demandAppId" column="demand_app_id"/>
+        <result property="supplyAppId" column="supply_app_id"/>
+        <result property="shopRecruitmentId" column="shop_recruitment_id"/>
+        <result property="provideStaffId" column="provide_staff_id"/>
+        <result property="content" column="content"/>
+        <result property="createDate" column="create_date"/>
+    </resultMap>
+
+	<select id="queryObject" resultType="com.wzlue.notice.entity.NoticeEntity">
+		SELECT
+		a.* ,
+		(select b.`name` from wx_app b where b.id = a.demand_app_id) demand,
+		(select b.`name` from wx_app b where b.id = a.supply_app_id) supply
+		FROM notice a
+		WHERE a.id = #{value}
+	</select>
+
+	<select id="queryList" resultType="com.wzlue.notice.entity.NoticeEntity">
+		SELECT * FROM notice
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+			<otherwise>
+                ORDER BY id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			LIMIT #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		SELECT count(*) FROM notice
+	</select>
+	 
+	<insert id="save" parameterType="com.wzlue.notice.entity.NoticeEntity">
+		INSERT INTO notice
+		(
+													`id`, 
+																	`belong_to`, 
+																	`type`, 
+																	`demand_app_id`, 
+																	`supply_app_id`, 
+																	`shop_recruitment_id`, 
+																	`provide_staff_id`, 
+																	`content`, 
+																	`create_date`
+									)
+		VALUES
+		(
+													#{id}, 
+																	#{belongTo}, 
+																	#{type}, 
+																	#{demandAppId}, 
+																	#{supplyAppId}, 
+																	#{shopRecruitmentId}, 
+																	#{provideStaffId}, 
+																	#{content}, 
+																	now()
+									)
+	</insert>
+	 
+	<update id="update" parameterType="com.wzlue.notice.entity.NoticeEntity">
+		UPDATE notice
+		<set>
+																				<if test="belongTo != null">`belong_to` = #{belongTo}, </if>
+																	<if test="type != null">`type` = #{type}, </if>
+																	<if test="demandAppId != null">`demand_app_id` = #{demandAppId}, </if>
+																	<if test="supplyAppId != null">`supply_app_id` = #{supplyAppId}, </if>
+																	<if test="shopRecruitmentId != null">`shop_recruitment_id` = #{shopRecruitmentId}, </if>
+																	<if test="provideStaffId != null">`provide_staff_id` = #{provideStaffId}, </if>
+																	<if test="content != null">`content` = #{content}, </if>
+																	<if test="createDate != null">`create_date` = #{createDate}</if>
+									</set>
+		WHERE id = #{id}
+	</update>
+	
+	<delete id="delete">
+		DELETE FROM notice WHERE id = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		DELETE FROM notice WHERE id IN
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

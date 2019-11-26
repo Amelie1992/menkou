@@ -1,0 +1,5 @@
+com\wzlue\generator\dao\SysGeneratorDao.class
+com\wzlue\generator\entity\TableEntity.class
+com\wzlue\generator\service\SysGeneratorService.class
+com\wzlue\generator\entity\ColumnEntity.class
+com\wzlue\generator\common\util\GenUtils.class

@@ -1,0 +1,787 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.jobApplication.dao.JobApplicationDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.jobApplication.entity.JobApplicationEntity" id="jobApplicationMap">
+        <result property="id" column="id"/>
+        <result property="openid" column="openid"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="realName" column="real_name"/>
+        <result property="phone" column="phone"/>
+        <result property="sex" column="sex"/>
+        <result property="wechatNumber" column="wechat_number"/>
+        <result property="age" column="age"/>
+        <result property="workExperience" column="work_experience"/>
+        <result property="jobId" column="job_id"/>
+        <result property="expectedSalary" column="expected_salary"/>
+        <result property="expectedProvince" column="expected_province"/>
+        <result property="expectedCity" column="expected_city"/>
+        <result property="expectedArea" column="expected_area"/>
+        <result property="expectedStreet" column="expected_street"/>
+        <result property="shopRecruitmentId" column="shop_recruitment_id"/>
+        <result property="platformRecruitmentId" column="platform_recruitment_id"/>
+        <result property="type" column="type"/>
+        <result property="stateFeedback" column="state_feedback"/>
+        <result property="feedback" column="feedback"/>
+        <result property="hiredate" column="hiredate"/>
+        <result property="reward" column="reward"/>
+        <result property="appId" column="app_id"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="belongTo" column="belong_to"/>
+        <result property="shopFeedback" column="shop_feedback"/>
+        <result property="shopRemark" column="shop_remark"/>
+        <result property="recommenderOpenid" column="recommender_openid"/>
+        <!--入职员工打卡-->
+        <association property="clockInEntity" javaType="com.wzlue.jobApplication.entity.ClockInEntity">
+            <result property="id" column="cid"/>
+            <result property="appId" column="app_id"/>
+            <result property="memberId" column="member_id"/>
+            <result property="recruitId" column="recruit_id"/>
+            <result property="coordinateX" column="coordinate_x"/>
+            <result property="coordinateY" column="coordinate_y"/>
+            <result property="effectiveDistance" column="effective_distance"/>
+            <result property="displayAddress" column="display_address"/>
+            <result property="address" column="address"/>
+            <result property="type" column="cType"/>
+            <result property="delFlag" column="cdel"/>
+        </association>
+        <!--门店招聘-->
+        <association property="shopRecruitmentEntity" javaType="com.wzlue.recruitment.entity.ShopRecruitmentEntity">
+            <result property="id" column="sid"/>
+            <result property="recruitmentFirm" column="recruitment_firm"/>
+            <result property="logo" column="logo"/>
+            <result property="title" column="title"/>
+            <result property="salary" column="salary"/>
+            <result property="belongTo" column="belong_to"/>
+        </association>
+    </resultMap>
+
+    <resultMap type="com.wzlue.jobApplication.entity.JobApplicationEntity" id="jobApplicationMap2">
+        <result property="id" column="id"/>
+        <result property="rownum" column="rownum"/>
+        <result property="openid" column="openid"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="realName" column="real_name"/>
+        <result property="phone" column="phone"/>
+        <result property="sex" column="sex"/>
+        <result property="wechatNumber" column="wechat_number"/>
+        <result property="age" column="age"/>
+        <result property="workExperience" column="work_experience"/>
+        <result property="jobId" column="job_id"/>
+        <result property="expectedSalary" column="expected_salary"/>
+        <result property="expectedProvince" column="expected_province"/>
+        <result property="expectedCity" column="expected_city"/>
+        <result property="expectedArea" column="expected_area"/>
+        <result property="expectedStreet" column="expected_street"/>
+        <result property="shopRecruitmentId" column="shop_recruitment_id"/>
+        <result property="platformRecruitmentId" column="platform_recruitment_id"/>
+        <result property="type" column="type"/>
+        <result property="stateFeedback" column="state_feedback"/>
+        <result property="feedback" column="feedback"/>
+        <result property="hiredate" column="hiredate"/>
+        <result property="reward" column="reward"/>
+        <result property="appId" column="app_id"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="belongTo" column="belong_to"/>
+        <result property="distributionStatus" column="distribution_status"/>
+        <result property="platformJobId" column="platform_job_id"/>
+        <result property="wname" column="wname"/>
+        <result property="recruitmentFirm" column="recruitmentFirm"/>
+        <result property="recruitmentTitle" column="recruitmentTitle"/>
+        <result property="recommenderOpenid" column="recommender_openid"/>
+        <association property="shopRecruitmentEntity"  javaType="com.wzlue.recruitment.entity.ShopRecruitmentEntity"
+                     column="shop_recruitment_id" select="com.wzlue.recruitment.dao.ShopRecruitmentDao.queryObject2"  autoMapping="true"/>
+    </resultMap>
+
+    <select id="queryObject"  resultMap="jobApplicationMap2">
+		SELECT
+		a.* ,
+		(select b.config_value from t_store_config b WHERE b.config_id=a.job_id)jobStr,
+		(select b.config_value from t_store_config b WHERE b.config_id=a.expected_salary) salaryStr,
+        (select b.shortname from sys_area b WHERE b.id=a.expected_province) provinceStr,
+        (select b.shortname from sys_area b WHERE b.id=a.expected_city) cityStr,
+        (select b.shortname from sys_area b WHERE b.id=a.expected_area) areaStr,
+        (select b.shortname from sys_area b WHERE b.id=a.expected_street) streetStr
+		FROM job_application a WHERE id = #{value}
+	</select>
+
+    <select id="queryList"  resultMap="jobApplicationMap2">
+        SELECT
+        a.* ,
+        (select b.config_value from t_store_config b WHERE b.config_id=a.job_id)jobStr,
+        (select b.config_value from t_store_config b WHERE b.config_id=a.expected_salary) salaryStr,
+        (select b.shortname from sys_area b WHERE b.id=a.expected_province) provinceStr,
+        (select b.shortname from sys_area b WHERE b.id=a.expected_city) cityStr,
+        (select b.shortname from sys_area b WHERE b.id=a.expected_area) areaStr,
+        (select b.shortname from sys_area b WHERE b.id=a.expected_street) streetStr,
+        c.name wname,
+        d.recruitment_firm recruitmentFirm,
+        d.title recruitmentTitle
+        FROM job_application a
+        left join wx_app b on a.app_id = b.id AND b.del_flag = 0
+        left join wx_app c on a.latest_app_id = c.id AND c.del_flag = 0
+        left join shop_recruitment d on a.shop_recruitment_id  = d.id
+        <if test="appId!=null and appId!=''">
+        and d.app_id = #{appId}
+        </if>
+        <where>
+            1=1
+            <if test="recruitmentFirm != null and recruitmentFirm.trim() != ''">
+                AND d.recruitment_firm like  concat('%',#{recruitmentFirm},'%')
+            </if>
+            <if test="recruitmentTitle!=null and recruitmentTitle.trim()!=''">
+                and  d.title like  concat('%',#{recruitmentTitle},'%')
+            </if>
+            <if test="appid != null and appid.trim() != ''">
+                AND b.id = #{appid}
+            </if>
+            <if test="openid!=null and openid!=''">
+                and a.openid = #{openid}
+            </if>
+            <if test="appId!=null and appId!=''">
+                and a.app_id = #{appId}
+            </if>
+            <!--<if test="appId!=null and appId!=''">
+                and d.app_id = #{appId}
+            </if>-->
+            <if test="belongTo!=null and belongTo!=''">
+                and a.belong_to = #{belongTo}
+            </if>
+            <if test="type!=null and type!=''">
+                and a.`type` = #{type}
+            </if>
+            <if test="stateFeedback!=null and stateFeedback!=''">
+                and a.state_feedback = #{stateFeedback}
+            </if>
+            <if test="timeFrame!=null and timeFrame!=''">
+                <if test="timeFrame==1">
+                    and DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= date(a.create_date)
+                </if>
+                <if test="timeFrame==2">
+                    and DATE_SUB(CURDATE(), INTERVAL 30 DAY) &lt;= date(a.create_date)
+                </if>
+                <if test="timeFrame==3">
+                    and QUARTER(now())=QUARTER(a.create_date)
+                </if>
+                <if test="timeFrame==4">
+                    and YEAR(now())=YEAR(a.create_date)
+                </if>
+            </if>
+            <if test="shopRecruitmentId != null and shopRecruitmentId != ''">
+                AND a.shop_recruitment_id = #{shopRecruitmentId}
+            </if>
+            <if test="distributionStatus != null and distributionStatus != ''">
+                AND a.distribution_status = #{distributionStatus}
+            </if>
+            <if test="realName!=null and realName.trim()!=''">
+                and a.real_name like CONCAT('%',#{realName},'%')
+            </if>
+            <if test="nickName!=null and nickName.trim()!=''">
+                and a.nick_name like CONCAT('%',#{nickName},'%')
+            </if>
+            <if test="phone!=null and phone.trim()!=''">
+                and a.phone like CONCAT('%',#{phone},'%')
+            </if>
+            and a.del_flag = 2
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        SELECT count(*)
+        FROM job_application a
+        left join wx_app b on a.app_id = b.id AND b.del_flag = 0
+        left join shop_recruitment d on a.shop_recruitment_id  = d.id
+        <where>
+            1=1
+            <if test="recruitmentFirm != null and recruitmentFirm.trim() != ''">
+                AND d.recruitment_firm like  concat('%',#{recruitmentFirm},'%')
+            </if>
+            <if test="recruitmentTitle!=null and recruitmentTitle.trim()!=''">
+                and  d.title like  concat('%',#{recruitmentTitle},'%')
+            </if>
+            <if test="appid != null and appid.trim() != ''">
+                AND b.id = #{appid}
+            </if>
+            <if test="openid!=null and openid!=''">
+                and a.openid = #{openid}
+            </if>
+            <if test="appId!=null and appId!=''">
+                and a.app_id = #{appId}
+            </if>
+            <if test="belongTo!=null and belongTo!=''">
+                and a.belong_to = #{belongTo}
+            </if>
+            <if test="type!=null and type!=''">
+                and a.`type` = #{type}
+            </if>
+            <if test="stateFeedback!=null and stateFeedback!=''">
+                and a.state_feedback = #{stateFeedback}
+            </if>
+            <if test="timeFrame!=null and timeFrame!=''">
+                <if test="timeFrame==1">
+                    and DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= date(a.create_date)
+                </if>
+                <if test="timeFrame==2">
+                    and DATE_SUB(CURDATE(), INTERVAL 30 DAY) &lt;= date(a.create_date)
+                </if>
+                <if test="timeFrame==3">
+                    and QUARTER(now())=QUARTER(a.create_date)
+                </if>
+                <if test="timeFrame==4">
+                    and YEAR(now())=YEAR(a.create_date)
+                </if>
+            </if>
+            <if test="shopRecruitmentId != null and shopRecruitmentId != ''">
+                AND a.shop_recruitment_id = #{shopRecruitmentId}
+            </if>
+            <if test="distributionStatus != null and distributionStatus != ''">
+                AND a.distribution_status = #{distributionStatus}
+            </if>
+            <if test="realName!=null and realName.trim()!=''">
+                and a.real_name like CONCAT('%',#{realName},'%')
+            </if>
+            <if test="nickName!=null and nickName.trim()!=''">
+                and a.nick_name like CONCAT('%',#{nickName},'%')
+            </if>
+            <if test="phone!=null and phone.trim()!=''">
+                and a.phone like CONCAT('%',#{phone},'%')
+            </if>
+            <if test="self!=null and self!=''">
+                and a.id != #{self}
+            </if>
+            and a.del_flag = 2
+        </where>
+    </select>
+
+    <!--入职员工的打卡设置列表-->
+    <select id="queryEntryList" resultMap="jobApplicationMap">
+        SELECT *,ja.id AS jid,sr.id AS sid,cci.id AS cid,cci.del_flag AS cdel,
+        cci.type AS cType
+        FROM job_application ja
+        left join shop_recruitment sr on sr.id = ja.shop_recruitment_id
+        left join c_clock_in cci on cci.member_id = ja.id
+        left join wx_app b on ja.app_id = b.id AND b.del_flag = 0
+        <where>
+            1=1
+            <if test="appId != null and appId.trim() != ''">
+                AND ja.app_id = #{appId}
+            </if>
+            <if test="title!='' and title!=null">
+                and sr.title like CONCAT('%',#{title},'%')
+            </if>
+            <if test="recruitmentFirm!='' and recruitmentFirm!=null">
+                and sr.recruitment_firm like CONCAT('%',#{recruitmentFirm},'%')
+            </if>
+            <if test="nickName!='' and nickName!=null">
+                and ja.nick_name like CONCAT('%',#{nickName},'%')
+            </if>
+            <if test="realName!='' and realName!=null">
+                and ja.real_name like CONCAT('%',#{realName},'%')
+            </if>
+            <if test="phone!='' and phone!=null">
+                and ja.phone like CONCAT('%',#{phone},'%')
+            </if>
+            <if test="stateFeedback!='' and stateFeedback!=null">
+                and ja.state_feedback =#{stateFeedback}
+            </if>
+            <if test="beginTime!=null and beginTime!=''">
+                <![CDATA[   and DATE_FORMAT(ja.hiredate, '%Y-%m-%d') >=  DATE_FORMAT(#{beginTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                <![CDATA[  and DATE_FORMAT(ja.hiredate, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="shopRecruitmentId!='' and shopRecruitmentId!=null">
+                and ja.shop_recruitment_id =#{shopRecruitmentId}
+            </if>
+        </where>
+        and ja.state_feedback >=4
+        and ja.del_flag = 2
+        and sr.belong_to = 1
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY cci.del_flag asc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryEntryTotal" resultType="int">
+        SELECT count(*)
+        FROM job_application ja
+        left join shop_recruitment sr on sr.id = ja.shop_recruitment_id
+        left join c_clock_in cci on cci.member_id = ja.id
+        left join wx_app b on ja.app_id = b.id AND b.del_flag = 0
+        <where>
+            1=1
+            and ja.state_feedback >=4
+            and ja.del_flag = 2
+            <if test="appId != null and appId.trim() != ''">
+                AND ja.app_id = #{appId}
+            </if>
+            <if test="belongTo!='' and belongTo!=null">
+                and sr.belong_to = #{belongTo}
+            </if>
+            <if test="title!='' and title!=null">
+                and sr.title like CONCAT('%',#{title},'%')
+            </if>
+            <if test="recruitmentFirm!='' and recruitmentFirm!=null">
+                and sr.recruitment_firm like CONCAT('%',#{recruitmentFirm},'%')
+            </if>
+            <if test="nickName!='' and nickName!=null">
+                and ja.nick_name like CONCAT('%',#{nickName},'%')
+            </if>
+            <if test="realName!='' and realName!=null">
+                and ja.real_name like CONCAT('%',#{realName},'%')
+            </if>
+            <if test="phone!='' and phone!=null">
+                and ja.phone like CONCAT('%',#{phone},'%')
+            </if>
+            <if test="stateFeedback!='' and stateFeedback!=null">
+                and ja.state_feedback =#{stateFeedback}
+            </if>
+            <if test="beginTime!=null and beginTime!=''">
+                <![CDATA[   and DATE_FORMAT(ja.hiredate, '%Y-%m-%d') >=  DATE_FORMAT(#{beginTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                <![CDATA[  and DATE_FORMAT(ja.hiredate, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="recruitId!='' and recruitId!=null">
+                and cci.recruit_id =#{recruitId}
+            </if>
+            <if test="shopRecruitmentId!='' and shopRecruitmentId!=null">
+                and ja.shop_recruitment_id =#{shopRecruitmentId}
+            </if>
+        </where>
+    </select>
+
+    <select id="fourEntry" resultType="int">
+        SELECT count(*)
+        FROM job_application ja
+        left join shop_recruitment sr on sr.id = ja.shop_recruitment_id
+        left join c_clock_in cci on cci.member_id = ja.id
+        left join wx_app b on ja.app_id = b.id AND b.del_flag = 0
+        <where>
+            1=1
+            and ja.state_feedback =4
+            and ja.del_flag = 2
+            <if test="appId != null and appId.trim() != ''">
+                AND ja.app_id = #{appId}
+            </if>
+            <if test="title!='' and title!=null">
+                and sr.title like CONCAT('%',#{title},'%')
+            </if>
+            <if test="recruitmentFirm!='' and recruitmentFirm!=null">
+                and sr.recruitment_firm like CONCAT('%',#{recruitmentFirm},'%')
+            </if>
+            <if test="nickName!='' and nickName!=null">
+                and ja.nick_name like CONCAT('%',#{nickName},'%')
+            </if>
+            <if test="realName!='' and realName!=null">
+                and ja.real_name like CONCAT('%',#{realName},'%')
+            </if>
+            <if test="phone!='' and phone!=null">
+                and ja.phone like CONCAT('%',#{phone},'%')
+            </if>
+            <if test="stateFeedback!='' and stateFeedback!=null">
+                and ja.state_feedback =#{stateFeedback}
+            </if>
+            <if test="beginTime!=null and beginTime!=''">
+                <![CDATA[   and DATE_FORMAT(ja.hiredate, '%Y-%m-%d') >=  DATE_FORMAT(#{beginTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                <![CDATA[  and DATE_FORMAT(ja.hiredate, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="recruitId!='' and recruitId!=null">
+                and cci.recruit_id =#{recruitId}
+            </if>
+            <if test="shopRecruitmentId!='' and shopRecruitmentId!=null">
+                and ja.shop_recruitment_id =#{shopRecruitmentId}
+            </if>
+        </where>
+    </select>
+
+    <select id="rewardAll" resultType="java.math.BigDecimal">
+        SELECT sum(reward) FROM job_application
+        WHERE openid = #{openid}
+    </select>
+
+    <insert id="save" parameterType="com.wzlue.jobApplication.entity.JobApplicationEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO job_application
+		(
+            `openid`,
+            `nick_name`,
+            `real_name`,
+            `phone`,
+            `sex`,
+            `wechat_number`,
+            `age`,
+            `work_experience`,
+            `job_id`,
+            `expected_salary`,
+            `expected_province`,
+            `expected_city`,
+            `expected_area`,
+            `expected_street`,
+            `shop_recruitment_id`,
+            `platform_recruitment_id`,
+            `type`,
+            `state_feedback`,
+            `feedback`,
+            `hiredate`,
+            `reward`,
+            `app_id`,
+            `create_id`,
+            `create_date`,
+            `update_id`,
+            `update_date`,
+            `del_flag`,
+            `belong_to`,
+            `distribution_status`,
+            `platform_job_id`,
+            `latest_app_id`,
+            `recommender_openid`
+
+									)
+		VALUES
+		(
+            #{openid},
+            #{nickName},
+            #{realName},
+            #{phone},
+            #{sex},
+            #{wechatNumber},
+            #{age},
+            #{workExperience},
+            #{jobId},
+            #{expectedSalary},
+            #{expectedProvince},
+            #{expectedCity},
+            #{expectedArea},
+            #{expectedStreet},
+            #{shopRecruitmentId},
+            #{platformRecruitmentId},
+            #{type},
+            1,
+            #{feedback},
+            #{hiredate},
+            #{reward},
+            #{appId},
+            #{createId},
+            now(),
+            #{updateId},
+            now(),
+            2,
+            #{belongTo},
+            #{distributionStatus},
+            #{platformJobId},
+            #{latestAppId},
+            #{recommenderOpenid}
+									)
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.jobApplication.entity.JobApplicationEntity">
+        UPDATE job_application
+        <set>
+            <if test="openid != null">`openid` = #{openid},</if>
+            <if test="nickName != null">`nick_name` = #{nickName},</if>
+            <if test="realName != null">`real_name` = #{realName},</if>
+            <if test="phone != null">`phone` = #{phone},</if>
+            <if test="sex != null">`sex` = #{sex},</if>
+            <if test="wechatNumber != null">`wechat_number` = #{wechatNumber},</if>
+            <if test="age != null">`age` = #{age},</if>
+            <if test="workExperience != null">`work_experience` = #{workExperience},</if>
+            <if test="jobId != null">`job_id` = #{jobId},</if>
+            <if test="expectedSalary != null">`expected_salary` = #{expectedSalary},</if>
+            <if test="expectedProvince != null">`expected_province` = #{expectedProvince},</if>
+            <if test="expectedCity != null">`expected_city` = #{expectedCity},</if>
+            <if test="expectedArea != null">`expected_area` = #{expectedArea},</if>
+            <if test="expectedStreet != null">`expected_street` = #{expectedStreet},</if>
+            <if test="shopRecruitmentId != null">`shop_recruitment_id` = #{shopRecruitmentId},</if>
+            <if test="platformRecruitmentId != null">`platform_recruitment_id` = #{platformRecruitmentId},</if>
+            <if test="type != null">`type` = #{type},</if>
+            <if test="stateFeedback != null">`state_feedback` = #{stateFeedback},</if>
+            <if test="feedback != null">`feedback` = #{feedback},</if>
+            <if test="hiredate != null">`hiredate` = #{hiredate},</if>
+            <if test="reward != null">`reward` = #{reward},</if>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="createId != null">`create_id` = #{createId},</if>
+            <if test="createDate != null">`create_date` = #{createDate},</if>
+            <if test="updateId != null">`update_id` = #{updateId},</if>
+            <if test="updateDate != null">`update_date` = now(),</if>
+            <if test="delFlag != null">`del_flag` = #{delFlag},</if>
+            <if test="belongTo != null">`belong_to` = #{belongTo},</if>
+            <if test="distributionStatus != null">`distribution_status` = #{distributionStatus},</if>
+            <if test="platformJobId != null">`platform_job_id` = #{platformJobId},</if>
+            <if test="latestAppId != null">`latest_app_id` = #{latestAppId},</if>
+            <if test="shopFeedback != null">`shop_feedback` = #{shopFeedback},</if>
+            <if test="shopRemark != null">`shop_remark` = #{shopRemark},</if>
+            <if test="recommenderOpenid != null">`recommender_openid` = #{recommenderOpenid}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM job_application WHERE id = #{value}
+	</delete>
+
+    <update id="deleteBatch">
+        UPDATE job_application SET del_flag = 1 WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="updateBalance" parameterType="com.wzlue.jobApplication.entity.JobApplicationEntity">
+        UPDATE job_application
+        <set>
+            <if test="reward != null">`reward` = #{reward}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+
+
+
+    <select id="queryListByPlatform"  resultMap="jobApplicationMap2">
+        SELECT
+        a.* ,
+        (select b.config_value from t_store_config b WHERE b.config_id=a.job_id)jobStr,
+        (select b.config_value from t_store_config b WHERE b.config_id=a.expected_salary) salaryStr,
+        (select b.shortname from sys_area b WHERE b.id=a.expected_province) provinceStr,
+        (select b.shortname from sys_area b WHERE b.id=a.expected_city) cityStr,
+        (select b.shortname from sys_area b WHERE b.id=a.expected_area) areaStr,
+        (select b.shortname from sys_area b WHERE b.id=a.expected_street) streetStr,
+        c.name wname
+        FROM job_application a
+        left join wx_app b on a.app_id = b.id AND b.del_flag = 0
+        left join wx_app c on a.latest_app_id = c.id AND c.del_flag = 0
+        <where>
+            1=1
+            <if test="appid != null and appid.trim() != ''">
+                AND b.id = #{appid}
+            </if>
+            <if test="openid!=null and openid!=''">
+                and a.openid = #{openid}
+            </if>
+            <if test="appId!=null and appId!=''">
+                and a.app_id = #{appId}
+            </if>
+            <if test="belongTo!=null and belongTo!=''">
+                and a.belong_to = #{belongTo}
+            </if>
+            <if test="distributionStatus!=null and distributionStatus!=''">
+                and a.distribution_status = #{distributionStatus}
+            </if>
+            <if test="type!=null and type!=''">
+                and a.`type` = #{type}
+            </if>
+            <if test="stateFeedback!=null and stateFeedback!=''">
+                and a.state_feedback = #{stateFeedback}
+            </if>
+            <if test="timeFrame!=null and timeFrame!=''">
+                <if test="timeFrame==1">
+                    and DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= date(a.create_date)
+                </if>
+                <if test="timeFrame==2">
+                    and DATE_SUB(CURDATE(), INTERVAL 30 DAY) &lt;= date(a.create_date)
+                </if>
+                <if test="timeFrame==3">
+                    and QUARTER(now())=QUARTER(a.create_date)
+                </if>
+                <if test="timeFrame==4">
+                    and YEAR(now())=YEAR(a.create_date)
+                </if>
+            </if>
+            and a.del_flag = 2
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotalByPlatform" resultType="int">
+        SELECT count(*)
+        FROM job_application a
+        left join wx_app b on a.app_id = b.id AND b.del_flag = 0
+        <where>
+            1=1
+            <if test="appid != null and appid.trim() != ''">
+                AND b.id = #{appid}
+            </if>
+            <if test="openid!=null and openid!=''">
+                and a.openid = #{openid}
+            </if>
+            <if test="appId!=null and appId!=''">
+                and a.app_id = #{appId}
+            </if>
+            <if test="belongTo!=null and belongTo!=''">
+                and a.belong_to = #{belongTo}
+            </if>
+
+            <if test="distributionStatus!=null and distributionStatus!=''">
+                and a.distribution_status = #{distributionStatus}
+            </if>
+            <if test="type!=null and type!=''">
+                and a.`type` = #{type}
+            </if>
+            <if test="stateFeedback!=null and stateFeedback!=''">
+                and a.state_feedback = #{stateFeedback}
+            </if>
+            <if test="timeFrame!=null and timeFrame!=''">
+                <if test="timeFrame==1">
+                    and DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= date(a.create_date)
+                </if>
+                <if test="timeFrame==2">
+                    and DATE_SUB(CURDATE(), INTERVAL 30 DAY) &lt;= date(a.create_date)
+                </if>
+                <if test="timeFrame==3">
+                    and QUARTER(now())=QUARTER(a.create_date)
+                </if>
+                <if test="timeFrame==4">
+                    and YEAR(now())=YEAR(a.create_date)
+                </if>
+            </if>
+            and a.del_flag = 2
+        </where>
+    </select>
+
+    <!--用户一天内同一个招聘是否已报名-->
+    <select id="isEnroll" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM job_application
+        WHERE openid = #{openid} and shop_recruitment_id = #{shopRecruitmentId}  and del_flag = 2
+        /*and to_days(create_date) = to_days(now())*/
+        /*and state_feedback = 1*/
+    </select>
+
+
+
+    <sql id="sort_before">
+        set @rownum=0;
+        SELECT
+        @rownum:=@rownum+1 as rownum,x.* from
+        (
+
+    </sql>
+    <sql id="sort_after">
+        ) x
+    </sql>
+    <sql id="selectListVo">
+        SELECT
+        a.* ,
+        (select b.config_value from t_store_config b WHERE b.config_id=a.job_id)jobStr,
+        (select b.config_value from t_store_config b WHERE b.config_id=a.expected_salary) salaryStr,
+        (select b.shortname from sys_area b WHERE b.id=a.expected_province) provinceStr,
+        (select b.shortname from sys_area b WHERE b.id=a.expected_city) cityStr,
+        (select b.shortname from sys_area b WHERE b.id=a.expected_area) areaStr,
+        (select b.shortname from sys_area b WHERE b.id=a.expected_street) streetStr,
+        c.name wname
+        FROM job_application a
+        left join wx_app b on a.app_id = b.id AND b.del_flag = 0
+        left join wx_app c on a.latest_app_id = c.id AND c.del_flag = 0
+    </sql>
+    <select id="queryListByIds"  resultMap="jobApplicationMap2">
+        <include refid="sort_before"/>
+        <include refid="selectListVo"/>
+        <where>
+            and a.del_flag = 2
+            and a.id in
+            <foreach item="id" collection="array" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>
+        ORDER BY a.id desc
+        <include refid="sort_after"/>
+
+    </select>
+    <select id="queryListAll"  resultMap="jobApplicationMap2">
+        <include refid="sort_before"/>
+        <include refid="selectListVo"/>
+        <where>
+            <if test="appid != null and appid.trim() != ''">
+                AND b.id = #{appid}
+            </if>
+            <if test="openid!=null and openid!=''">
+                and a.openid = #{openid}
+            </if>
+            <if test="appId!=null and appId!=''">
+                and a.app_id = #{appId}
+            </if>
+            <if test="belongTo!=null and belongTo!=''">
+                and a.belong_to = #{belongTo}
+            </if>
+            <if test="type!=null and type!=''">
+                and a.`type` = #{type}
+            </if>
+            <if test="stateFeedback!=null and stateFeedback!=''">
+                and a.state_feedback = #{stateFeedback}
+            </if>
+            <if test="timeFrame!=null and timeFrame!=''">
+                <if test="timeFrame==1">
+                    and DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= date(a.create_date)
+                </if>
+                <if test="timeFrame==2">
+                    and DATE_SUB(CURDATE(), INTERVAL 30 DAY) &lt;= date(a.create_date)
+                </if>
+                <if test="timeFrame==3">
+                    and QUARTER(now())=QUARTER(a.create_date)
+                </if>
+                <if test="timeFrame==4">
+                    and YEAR(now())=YEAR(a.create_date)
+                </if>
+            </if>
+            <if test="shopRecruitmentId != null and shopRecruitmentId != ''">
+                AND a.shop_recruitment_id = #{shopRecruitmentId}
+            </if>
+            <if test="distributionStatus != null ">
+                AND a.distribution_status = #{distributionStatus}
+            </if>
+            <if test="realName!=null and realName.trim()!=''">
+                and a.real_name like CONCAT('%',#{realName},'%')
+            </if>
+            <if test="phone!=null and phone.trim()!=''">
+                and a.phone like CONCAT('%',#{phone},'%')
+            </if>
+            and a.del_flag = 2
+        </where>
+        ORDER BY a.id desc
+        <include refid="sort_after"/>
+
+    </select>
+
+</mapper>

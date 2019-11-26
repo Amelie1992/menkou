@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.sys.dao.SysLogisticsDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.sys.entity.SysLogisticsEntity" id="sysLogisticsMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="serviceId" column="service_id"/>
+        <result property="code" column="code"/>
+        <result property="sort" column="sort"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.sys.entity.SysLogisticsEntity">
+		SELECT * FROM sys_logistics WHERE id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.sys.entity.SysLogisticsEntity">
+        SELECT * FROM sys_logistics
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+		SELECT count(*) FROM sys_logistics
+	</select>
+
+    <insert id="save" parameterType="com.wzlue.sys.entity.SysLogisticsEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO sys_logistics
+		(
+            `name`,
+            `service_id`,
+            `code`,
+            `sort`
+		)
+		VALUES
+		(
+            #{name},
+            #{serviceId},
+            #{code},
+            #{sort}
+		)
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.sys.entity.SysLogisticsEntity">
+        UPDATE sys_logistics
+        <set>
+            <if test="name != null">`name` = #{name},</if>
+            <if test="serviceId != null">`service_id` = #{serviceId},</if>
+            <if test="code != null">`code` = #{code},</if>
+            <if test="sort != null">`sort` = #{sort}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM sys_logistics WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM sys_logistics WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

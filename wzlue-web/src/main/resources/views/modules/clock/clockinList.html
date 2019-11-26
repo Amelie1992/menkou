@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>打卡地址批量设置</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/AdminLTE.min.css">
+    <link rel="stylesheet" href="../../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+    <link rel="stylesheet" href="../../css/bootstrap-table.min.css">
+    <link rel="stylesheet" href="../../plugins/bootstrap-validator/css/bootstrap-validator.min.css">
+    <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../plugins/treegrid/jquery.treegrid.css">
+    <!--日期时间插件-->
+    <link rel="stylesheet" href="../../plugins/datetimepicker/css/bootstrap-datetimepicker.min.css">
+
+    <!--可搜索下拉css-->
+    <link href="../../plugins/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet"/>
+
+</head>
+<script charset="utf-8" src="https://map.qq.com/api/js?v=2.exp&key=I6YBZ-UBK33-IIT33-Y2FUC-LPZVQ-AFFBY"></script>
+<style type="text/css">
+    #map {
+        height: 500px;
+        margin: 0 auto;
+        padding: 0px;
+        width: 90%;
+    }
+
+    #container {
+        width: 72%;
+        height: 80%;
+        position: relative;
+        bottom: 0;
+        float: left;
+    }
+
+    #info {
+        font-size: 14px;
+        background: #FFF;
+        width: 270px;
+        height: 50px;
+        border-radius: 3px;
+        line-height: 50px;
+        text-align: center;
+    }
+
+    #searchDiv {
+        float: right;
+        width: 26%;
+    }
+
+    .clear {
+        *zoom: 1;
+    }
+
+    .clear:after {
+        content: "";
+        display: block;
+        clear: both;
+    }
+</style>
+<body onload="initMap()">
+<div id="rrapp" v-cloak class="content-wrapper wzl-content-wrapper">
+    <section class="content-header">
+        <h1>
+            打卡设置 &nbsp;<small v-if="title!=''">{{title}}</small>
+        </h1>
+    </section>
+    <div v-show="showList">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <div class="box-header with-border">
+                            <div class="box-header with-border">
+                                <div class="col-xs-2">
+                                    <input type="text" class="form-control" v-model="params.recruitmentFirm" name="recruitmentFirm" @keyup.enter="query"
+                                           placeholder="招聘单位" maxlength="30"/>
+                                </div>
+                                <div class="col-xs-2">
+                                    <input type="text" class="form-control" v-model="params.title" name="title" @keyup.enter="query"
+                                           placeholder="招聘标题" maxlength="30"/>
+                                </div>
+                                <div class="col-xs-2" >
+                                    <select id="appIdParam" class=" form-control selectpicker" data-live-search="true"></select>
+                                </div>
+                                <button class="btn btn-primary" @click="query"><i class="fa fa-search"></i>&nbsp;查询</button>
+                                <button class="btn btn-warning" @click="reset">
+                                    <i class="fa fa-trash-o"></i>&nbsp;重置
+                                </button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <div class="table-responsive">
+                                <table id="table"></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div v-show="!showList">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <form class="form-horizontal" id="form">
+                            <div class="row">
+                                <!--地图-->
+                                <div id="map" class="clear">
+                                    <div id="info">当前点击坐标为：<span id="position"></span></div>
+                                    <div id="container"></div>
+                                    <!--检索-->
+                                    <div id="searchDiv">
+                                        <input id="keyword" type="textbox" value="南京">
+                                        <input type="button" value="搜索" onclick="searchKeyword()">
+                                        <div style='width: 500px; height: 180px' id="infoDiv"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">x坐标   <span class="text-danger">*</span></div>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="coordinateX" id="coordinateX" class="form-control" disabled
+                                               v-model="clockIn.coordinateX" placeholder="x坐标"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">y坐标   <span class="text-danger">*</span></div>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="coordinateY" id="coordinateY" class="form-control" disabled
+                                               v-model="clockIn.coordinateY" placeholder="y坐标"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">有效范围(km)   <span class="text-danger">*</span></div>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="effectiveDistance" class="form-control"
+                                               v-model="clockIn.effectiveDistance" placeholder="有效范围"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">打卡显示名称   <span class="text-danger">*</span></div>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="displayAddress" class="form-control"
+                                               v-model="clockIn.displayAddress" placeholder="打卡显示名称"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">详细地址   <span class="text-danger">*</span></div>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="address" class="form-control" v-model="clockIn.address"
+                                               placeholder="详细地址"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">状态   <span class="text-danger">*</span></div>
+                                    <div class="col-sm-8">
+                                        <div class="form-group">
+                                            <label class="radio-inline"> <input name="type" type="radio" value="1" v-model="clockIn.type">正常</label>
+                                            <label class="radio-inline"> <input name="type" type="radio" value="2" v-model="clockIn.type">禁用</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-if="clockIn.id!=null">
+                                <div class="row">
+                                    <div class="form-group">
+                                        <div class="col-sm-2 control-label">创建时间</div>
+                                        <div class="col-sm-8">
+                                            <input type="text" name="createDate" class="form-control" disabled
+                                                   v-model="clockIn.createDate" placeholder="创建时间"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group">
+                                        <div class="col-sm-2 control-label">更新时间</div>
+                                        <div class="col-sm-8">
+                                            <input type="text" name="updateDate" class="form-control" disabled
+                                                   v-model="clockIn.updateDate" placeholder="更新时间"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label"></div>
+                                    <input type="button" class="btn btn-primary" @click="validate" value="确定" v-show="sureBtn"/>
+                                    &nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="showTableList"
+                                                       value="返回"/>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script src="../../libs/jquery.min.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../libs/bootstrap.min.js"></script>
+<script src="../../libs/vue.min.js"></script>
+<!--bootstrap-table-->
+<script src="../../plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="../../plugins/bootstrap-table/locale/bootstrap-table-zh-CN.js"></script>
+<!--bootstrap-validator-->
+<script src="../../plugins/bootstrap-validator/js/bootstrap-validator.min.js"></script>
+<script src="../../plugins/bootstrap-validator/js/zh_CN.min.js"></script>
+<script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+<script src="../../js/common.js"></script>
+
+<!--可搜索下拉js-->
+<script src="../../plugins/bootstrap-select/js/bootstrap-select.min.js"></script>
+<script src="../../plugins/bootstrap-select/js/i18n/defaults-zh_CN.min.js"></script>
+
+<script src="../../js/modules/clock/clockinList.js"></script>
+<script>
+    var searchService, markers = [];
+    function initMap() {
+        //初始化地图
+        var map = new qq.maps.Map(document.getElementById("container"),{
+            center: new qq.maps.LatLng(32.086866,118.797697),//南京
+            zoom: 13
+        });
+        //检索服务
+        var latlngBounds = new qq.maps.LatLngBounds();
+        //设置Poi检索服务，用于本地检索、周边检索
+        searchService = new qq.maps.SearchService({
+            //设置搜索范围为北京
+            location: "南京",
+            //设置搜索页码为1
+            pageIndex: 1,
+            //设置每页的结果数为5
+            pageCapacity: 5,
+            //设置展现查询结构到infoDIV上
+            panel: document.getElementById('infoDiv'),
+            //设置动扩大检索区域。默认值true，会自动检索指定城市以外区域。
+            autoExtend: true,
+            //检索成功的回调函数
+            complete: function(results) {
+                //设置回调函数参数
+                var pois = results.detail.pois;
+                vm.pois = results.detail.pois;
+                for (var i = 0, l = pois.length; i < l; i++) {
+                    var poi = pois[i];
+                    //扩展边界范围，用来包含搜索到的Poi点
+                    latlngBounds.extend(poi.latLng);
+                    var marker = new qq.maps.Marker({
+                        map: map,
+                        position: poi.latLng
+                    });
+                    marker.setTitle(i + 1);
+                    markers.push(marker);
+                }
+                //调整地图视野
+                map.fitBounds(latlngBounds);
+            },
+            //若服务请求失败，则运行以下函数
+            error: function() {
+                alert("该地址检索不到，请扩大搜索范围。");
+            }
+        });
+
+        //绑定单击事件添加参数
+        //var marker2 = [];
+        qq.maps.event.addListener(map, 'click', function(event) {
+            clearOverlays(markers);//移除搜索的标记
+            var lat = event.latLng.getLat().toFixed(6);
+            var lng = event.latLng.getLng().toFixed(6);
+            position.innerHTML = lat + "," + lng;
+            //创建marker
+            var marker2 = new qq.maps.Marker({
+                position: event.latLng,
+                map: map
+            });
+            markers.push(marker2);
+            document.getElementById('coordinateX').value=lat;
+            document.getElementById('coordinateY').value=lng;
+            Vue.set(vm.clockIn, 'coordinateX', lat);
+            Vue.set(vm.clockIn, 'coordinateY', lng);
+            //根据经纬度获取地址
+            geocoder.getAddress(event.latLng);
+        });
+
+        geocoder = new qq.maps.Geocoder({
+            complete: function (result) {
+                //alert('成功：'+result.detail.address);
+                vm.clockIn.displayAddress = result.detail.address;
+            }
+        });
+
+        //填充地址
+        $('#infoDiv').on('click','li',function () {
+            var address = $(this).get(0).innerHTML;
+            var str = address.replace(/<\/?[^>]+>/g, ' ');//
+            var strs = new Array(); //定义一数组
+            strs = str.split(" "); //字符分割
+            Vue.set(vm.clockIn, 'displayAddress', strs[4]);
+            Vue.set(vm.clockIn, 'address', strs[8]);
+            var positionStr = strs[8];
+            //经纬度
+            vm.pois.forEach(function (item) {
+                if (item.address == positionStr) {
+                    var latLng = item.latLng;
+                    clearOverlays(markers);//移除搜索的标记
+                    position.innerHTML = latLng.lat + "," + latLng.lng;
+                    //创建marker
+                    marker2 = new qq.maps.Marker({
+                        position: latLng,
+                        map: map
+                    });
+                    document.getElementById('coordinateX').value = latLng.lat;
+                    document.getElementById('coordinateY').value = latLng.lng;
+                    Vue.set(vm.clockIn, 'coordinateX', latLng.lat);
+                    Vue.set(vm.clockIn, 'coordinateY', latLng.lng);
+                }
+            })
+        });
+    }
+    //清除地图上的marker
+    function clearOverlays(overlays) {
+        var overlay;
+        while (overlay = overlays.pop()) {
+            overlay.setMap(null);
+        }
+    }
+
+    //设置搜索的范围和关键字等属性
+    function searchKeyword() {
+        var keyword = document.getElementById("keyword").value;
+        clearOverlays(markers);
+        //根据输入的城市设置搜索范围
+        // searchService.setLocation("北京");
+        //根据输入的关键字在搜索范围内检索
+        searchService.search(keyword);
+    }
+
+    $(function () {
+        /* $(".selectpicker").selectpicker({
+             noneSelectedText: '请选择'
+         });*/
+        $(window).on('load', function () {
+            $('.selectpicker').selectpicker('val', '');
+            $('.selectpicker').selectpicker('refresh');
+        });
+
+        //下拉数据加载
+        $.ajax({
+            type: 'get',
+            url: baseURL + "wechat/wxapp/selectAll",
+            dataType: 'json',
+            success: function (datas) {//返回list数据并循环获取
+                var wxlist = datas.wxAppList;
+                var select = $("#appIdParam");
+                select.append("<option value=''>全部门店</option>");
+                for (var i = 0; i < wxlist.length; i++) {
+                    select.append("<option value='" + wxlist[i].id + "'>"+ wxlist[i].name + "</option>");
+                }
+                $('.selectpicker').selectpicker('val', '');
+                $('.selectpicker').selectpicker('refresh');
+            }
+        });
+
+        $("#appIdParam").change('shown.bs.select', function (e) {
+            vm.params.appId = $("#appIdParam").val();
+        })
+    });
+</script>
+</body>
+</html>

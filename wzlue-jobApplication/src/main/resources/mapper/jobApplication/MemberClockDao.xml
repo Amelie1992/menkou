@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.jobApplication.dao.MemberClockDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.jobApplication.entity.MemberClockEntity" id="memberClockMap">
+        <result property="id" column="id"/>
+        <result property="userNo" column="user_no"/>
+        <result property="clockTime" column="clock_time"/>
+        <result property="clockType" column="clock_type"/>
+        <result property="clockAddress" column="clock_address"/>
+        <result property="remark" column="remark"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="deviceId" column="device_id"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.jobApplication.entity.MemberClockEntity">
+		SELECT * FROM c_member_clock WHERE id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.jobApplication.entity.MemberClockEntity">
+        SELECT * FROM c_member_clock
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+		SELECT count(*) FROM c_member_clock
+	</select>
+
+    <insert id="save" parameterType="com.wzlue.jobApplication.entity.MemberClockEntity">
+		INSERT INTO c_member_clock
+		(
+													`id`, 
+																	`user_no`, 
+																	`clock_time`, 
+																	`clock_type`, 
+																	`clock_address`, 
+																	`remark`, 
+																	`device_id`,
+																	`del_flag`,
+																	`create_id`, 
+																	`create_date`, 
+																	`update_id`, 
+																	`update_date`
+									)
+		VALUES
+		(
+													#{id}, 
+																	#{userNo}, 
+																	#{clockTime}, 
+																	#{clockType}, 
+																	#{clockAddress}, 
+																	#{remark}, 
+																	#{deviceId},
+																	#{delFlag},
+																	#{createId}, 
+																	#{createDate}, 
+																	#{updateId}, 
+																	#{updateDate}
+									)
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.jobApplication.entity.MemberClockEntity">
+        UPDATE c_member_clock
+        <set>
+            <if test="userNo != null">`user_no` = #{userNo},</if>
+            <if test="clockTime != null">`clock_time` = #{clockTime},</if>
+            <if test="clockType != null">`clock_type` = #{clockType},</if>
+            <if test="clockAddress != null">`clock_address` = #{clockAddress},</if>
+            <if test="remark != null">`remark` = #{remark},</if>
+            <if test="deviceId != null">`device_id` = #{deviceId},</if>
+            <if test="delFlag != null">`del_flag` = #{delFlag},</if>
+            <if test="createId != null">`create_id` = #{createId},</if>
+            <if test="createDate != null">`create_date` = #{createDate},</if>
+            <if test="updateId != null">`update_id` = #{updateId},</if>
+            <if test="updateDate != null">`update_date` = #{updateDate}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM c_member_clock WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM c_member_clock WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

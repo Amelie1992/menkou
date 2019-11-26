@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.wechat.dao.WxMsgDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.wechat.entity.WxMsgEntity" id="wxMsgMap">
+        <id property="id" column="id"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+        <result property="remark" column="remark"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="tenantId" column="tenant_id"/>
+        <result property="appId" column="app_id"/>
+        <result property="appName" column="app_name"/>
+        <result property="appLogo" column="app_logo"/>
+        <result property="wxUserId" column="wx_user_id"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="headimgUrl" column="headimg_url"/>
+        <result property="type" column="type"/>
+        <result property="repEvent" column="rep_event"/>
+        <result property="repType" column="rep_type"/>
+        <result property="repContent" column="rep_content"/>
+        <result property="repMediaId" column="rep_media_id"/>
+        <result property="repName" column="rep_name"/>
+        <result property="repDesc" column="rep_desc"/>
+        <result property="repUrl" column="rep_url"/>
+        <result property="repHqUrl" column="rep_hq_url"/>
+        <result property="content" column="content" typeHandler="com.wzlue.common.mybatis.handler.JsonTypeHandler" jdbcType="VARCHAR"/>
+        <result property="repThumbMediaId" column="rep_thumb_media_id"/>
+        <result property="repThumbUrl" column="rep_thumb_url"/>
+        <result property="repLocationX" column="rep_location_x"/>
+        <result property="repLocationY" column="rep_location_y"/>
+        <result property="repScale" column="rep_scale"/>
+        <result property="readFlag" column="read_flag"/>
+    </resultMap>
+
+    <resultMap id="wxMsgMap2" extends="wxMsgMap" type="com.wzlue.wechat.entity.WxMsgEntityVO">
+        <result property="countMsg" column="count_msg"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.wechat.entity.WxMsgEntity">
+		SELECT * FROM wx_msg WHERE id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.wechat.entity.WxMsgEntity">
+        SELECT * FROM wx_msg
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+		SELECT count(*) FROM wx_msg
+	</select>
+    <select id="listWxMsgMapGroup" resultMap="wxMsgMap2">
+        select
+        a.*,
+        b.count_msg
+        from
+        `wx_msg` as a
+        right join
+        (select
+        `wx_user_id`,
+        max(`create_date`) as maxtime,
+        count(`wx_user_id`) as count_msg
+        from
+        `wx_msg`
+        <where>
+            <if test="query.type != null and query.type != ''">
+                AND `type` = #{query.type}
+            </if>
+            <if test="query.readFlag != null and query.readFlag != ''">
+                AND `read_flag` = #{query.readFlag}
+            </if>
+            <if test="query.notInRepType != null and query.notInRepType != ''">
+                AND `rep_type` NOT IN (#{query.notInRepType})
+            </if>
+        </where>
+        group by `wx_user_id`) as b
+        on a.`wx_user_id` = b.`wx_user_id`
+        and a.`create_date` = b.maxtime
+        order by a.`create_date` desc
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+    <select id="listWxMsgMapGroupCount" resultType="java.lang.Integer">
+        select
+        a.*,
+        b.count_msg
+        from
+        `wx_msg` as a
+        right join
+        (select
+        `wx_user_id`,
+        max(`create_date`) as maxtime,
+        count(`wx_user_id`) as count_msg
+        from
+        `wx_msg`
+        <where>
+            <if test="query.type != null and query.type != ''">
+                AND `type` = #{query.type}
+            </if>
+            <if test="query.readFlag != null and query.readFlag != ''">
+                AND `read_flag` = #{query.readFlag}
+            </if>
+            <if test="query.notInRepType != null and query.notInRepType != ''">
+                AND `rep_type` NOT IN (#{query.notInRepType})
+            </if>
+        </where>
+        group by `wx_user_id`) as b
+        on a.`wx_user_id` = b.`wx_user_id`
+        and a.`create_date` = b.maxtime
+    </select>
+    <select id="findListByUserIdFlagAppid" resultType="com.wzlue.wechat.entity.WxMsgEntity">
+        SELECT * FROM
+        wx_msg
+        WHERE
+        wx_user_id = #{wxUserId} AND read_flag = #{readFlag} AND app_id = #{appId}
+    </select>
+    <select id="findListByUserIdFlagAppidCount" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM
+        wx_msg
+        WHERE
+        wx_user_id = #{wxUserId} AND read_flag = #{readFlag} AND app_id = #{appId}
+    </select>
+
+    <insert id="save" parameterType="com.wzlue.wechat.entity.WxMsgEntity">
+		INSERT INTO wx_msg
+		(
+			`id`, `create_id`, `create_date`, `update_id`, `update_date`, `remark`, `del_flag`, `tenant_id`, `app_id`, `app_name`,
+			`app_logo`, `wx_user_id`, `nick_name`, `headimg_url`, `type`, `rep_type`, `rep_event`, `rep_content`, `rep_media_id`,
+			`rep_name`, `rep_desc`, `rep_url`, `rep_hq_url`, `content`, `rep_thumb_media_id`, `rep_thumb_url`, `rep_location_x`,
+			 `rep_location_y`, `rep_scale`, `read_flag`
+			  )
+		VALUES
+		(
+		 	#{id}, #{createId}, #{createDate}, #{updateId}, #{updateDate}, #{remark}, #{delFlag}, #{tenantId}, #{appId}, #{appName},
+		  	#{appLogo}, #{wxUserId}, #{nickName}, #{headimgUrl}, #{type}, #{repType}, #{repEvent}, #{repContent}, #{repMediaId},
+		  	#{repName}, #{repDesc}, #{repUrl}, #{repHqUrl}, #{content}, #{repThumbMediaId}, #{repThumbUrl}, #{repLocationX},
+		    #{repLocationY}, #{repScale}, #{readFlag}
+		    )
+		</insert>
+
+    <update id="update" parameterType="com.wzlue.wechat.entity.WxMsgEntity">
+        UPDATE wx_msg
+        <set>
+            <if test="createId != null">`create_id` = #{createId},</if>
+            <if test="createDate != null">`create_date` = #{createDate},</if>
+            <if test="updateId != null">`update_id` = #{updateId},</if>
+            <if test="updateDate != null">`update_date` = #{updateDate},</if>
+            <if test="remark != null">`remark` = #{remark},</if>
+            <if test="delFlag != null">`del_flag` = #{delFlag},</if>
+            <if test="tenantId != null">`tenant_id` = #{tenantId},</if>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="appName != null">`app_name` = #{appName},</if>
+            <if test="appLogo != null">`app_logo` = #{appLogo},</if>
+            <if test="wxUserId != null">`wx_user_id` = #{wxUserId},</if>
+            <if test="nickName != null">`nick_name` = #{nickName},</if>
+            <if test="headimgUrl != null">`headimg_url` = #{headimgUrl},</if>
+            <if test="type != null">`type` = #{type},</if>
+            <if test="repType != null">`rep_type` = #{repType},</if>
+            <if test="repEvent != null">`rep_event` = #{repEvent},</if>
+            <if test="repContent != null">`rep_content` = #{repContent},</if>
+            <if test="repMediaId != null">`rep_media_id` = #{repMediaId},</if>
+            <if test="repName != null">`rep_name` = #{repName},</if>
+            <if test="repDesc != null">`rep_desc` = #{repDesc},</if>
+            <if test="repUrl != null">`rep_url` = #{repUrl},</if>
+            <if test="repHqUrl != null">`rep_hq_url` = #{repHqUrl},</if>
+            <if test="content != null">`content` = #{content},</if>
+            <if test="repThumbMediaId != null">`rep_thumb_media_id` = #{repThumbMediaId},</if>
+            <if test="repThumbUrl != null">`rep_thumb_url` = #{repThumbUrl},</if>
+            <if test="repLocationX != null">`rep_location_x` = #{repLocationX},</if>
+            <if test="repLocationY != null">`rep_location_y` = #{repLocationY},</if>
+            <if test="repScale != null">`rep_scale` = #{repScale},</if>
+            <if test="readFlag != null">`read_flag` = #{readFlag}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM wx_msg WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM wx_msg WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

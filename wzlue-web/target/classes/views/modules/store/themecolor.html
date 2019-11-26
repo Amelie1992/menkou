@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>主题色</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/AdminLTE.min.css">
+    <link rel="stylesheet" href="../../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+    <link rel="stylesheet" href="../../css/bootstrap-table.min.css">
+    <link rel="stylesheet" href="../../plugins/bootstrap-validator/css/bootstrap-validator.min.css">
+    <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../plugins/treegrid/jquery.treegrid.css">
+    <!--可搜索下拉css-->
+    <link href="../../plugins/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet"/>
+
+    <style>
+        select {
+            -webkit-appearance: none;
+            -webkit-tap-highlight-color: #fff;
+            outline: 0;
+        }
+
+        /**/
+        ul {
+            width: 1200px;
+            /*font-size: 0px;
+            width: 276px;
+            height: 190px;
+            left: 0px;
+            bottom: 30px;
+            top: 30px;
+            background: #fff;
+            padding: 5px 0 0 8px;
+            position: absolute;
+            z-index: 2;
+            list-style-type: none;*/
+        }
+
+        .color li {
+            width: 100px;
+            display: inline-block;
+            margin: 0 10px 10px 0;
+        }
+
+        .form li {
+            /*width: 140px;*/
+            display: inline-block;
+            margin: 0 10px 30px 0;
+        }
+
+
+    </style>
+
+</head>
+<body>
+
+<div id="rrapp" v-cloak class="content-wrapper wzl-content-wrapper">
+    <section class="content-header">
+        <h1>
+            主题色 &nbsp;<small v-if="title!=''">{{title}}</small>
+        </h1>
+    </section>
+    <div v-show="showList">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <div class="box-header with-border">
+                            <div class="col-xs-2" v-if="user_Store == 0">
+                                <select id="appIdParam" class=" form-control selectpicker"
+                                        data-live-search="true"></select>
+                            </div>
+                            <button class="btn btn-primary" @click="query"><i class="fa fa-search"></i>&nbsp;{{user_Store
+                                == 0 ? '查询' : '刷新'}}
+                            </button>
+                            <button v-if="hasPermission('store:wxappthemecolor:save')" class="btn btn-success"
+                                    @click="add">
+                                <i class="fa fa-plus"></i>&nbsp;新增
+                            </button>
+                            <button v-if="hasPermission('store:wxappthemecolor:update')" class="btn btn-warning"
+                                    @click="update">
+                                <i class="fa fa-trash-o"></i>&nbsp;修改
+                            </button>
+                            <button v-if="hasPermission('store:wxappthemecolor:delete')" class="btn btn-danger"
+                                    @click="del">
+                                <i class="fa fa-trash-o"></i>&nbsp;删除
+                            </button>
+                        </div>
+                        <div class="box-body">
+                            <div class="table-responsive">
+                                <table id="table"></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div v-show="!showList">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <form class="form-horizontal">
+                            <br><br>
+                            <div class="row">
+                                <div class="form-group required">
+                                    <div class="col-sm-1 control-label">色块</div>
+                                   <!-- <div class="col-sm-8">
+                                        <select class="form-control" name="backcolor" v-model="themecolor.backcolor">
+                                            <option value="1"><img src="/images/themecolor/backcolor/1@2x.png" alt="背景色1"></option>
+                                            <option value="2"><img src="/images/themecolor/backcolor/2@2x.png" alt="背景色2"></option>
+                                            <option value="3"><img src="/images/themecolor/backcolor/3@2x.png" alt="背景色3"></option>
+                                        </select>
+                                    </div>-->
+                                    <div class="col-sm-2">
+                                        <div class="text" id="text1" contentEditable="true"></div>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <a class="color backcolor" href="javascript:;">色块
+                                            <ul class="hide">
+                                                <li><img src="/images/themecolor/backcolor/1.png" alt="背景色1"
+                                                         height="100px" width="100px"></li>
+                                                <li><img src="/images/themecolor/backcolor/2.png" alt="背景色2"
+                                                         height="100px" width="100px"></li>
+                                                <li><img src="/images/themecolor/backcolor/3.png" alt="背景色3"
+                                                         height="100px" width="100px"></li>
+                                                <li><img src="/images/themecolor/backcolor/4.png" alt="背景色4"
+                                                         height="100px" width="100px"></li>
+                                                <li><img src="/images/themecolor/backcolor/5.png" alt="背景色5"
+                                                         height="100px" width="100px"></li>
+                                                <li><img src="/images/themecolor/backcolor/6.png" alt="背景色6"
+                                                         height="100px" width="100px"></li>
+                                                <li><img src="/images/themecolor/backcolor/7.png" alt="背景色7"
+                                                         height="100px" width="100px"></li>
+                                                <li><img src="/images/themecolor/backcolor/8.png" alt="背景色8"
+                                                         height="100px" width="100px"></li>
+                                                <li><img src="/images/themecolor/backcolor/9.png" alt="背景色9"
+                                                         height="100px" width="100px"></li>
+                                                <li><img src="/images/themecolor/backcolor/10.png" alt="背景色10"
+                                                         height="100px" width="100px"></li>
+                                            </ul>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <br><br>
+                            <div class="row">
+                                <div class="form-group required">
+                                    <div class="col-sm-1 control-label">图标</div>
+                                    <div class="col-sm-2">
+                                        <div class="text" id="text2" contentEditable="true"></div>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <a class="color buttonColor" href="javascript:;">图标
+                                            <ul class="hide">
+                                                <li><img src="/images/themecolor/buttonColor/1.png" alt="按钮颜色1"
+                                                         height="100px" width="100px"></li>
+                                                <li><img src="/images/themecolor/buttonColor/2.png" alt="按钮颜色2"
+                                                         height="100px" width="100px"></li>
+                                                <li><img src="/images/themecolor/buttonColor/3.png" alt="按钮颜色3"
+                                                         height="100px" width="100px"></li>
+                                                <li><img src="/images/themecolor/buttonColor/4.png" alt="按钮颜色4"
+                                                         height="100px" width="100px"></li>
+                                                <li><img src="/images/themecolor/buttonColor/5.png" alt="按钮颜色5"
+                                                         height="100px" width="100px"></li>
+                                                <li><img src="/images/themecolor/buttonColor/6.png" alt="按钮颜色6"
+                                                         height="100px" width="100px"></li>
+                                                <li><img src="/images/themecolor/buttonColor/7.png" alt="按钮颜色7"
+                                                         height="100px" width="100px"></li>
+                                                <li><img src="/images/themecolor/buttonColor/8.png" alt="按钮颜色8"
+                                                         height="100px" width="100px"></li>
+                                                <li><img src="/images/themecolor/buttonColor/9.png" alt="按钮颜色9"
+                                                         height="100px" width="100px"></li>
+                                                <li><img src="/images/themecolor/buttonColor/10.png" alt="按钮颜色10"
+                                                         height="100px" width="100px"></li>
+                                            </ul>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <br><br>
+                            <div class="row">
+                                <div class="form-group required">
+                                    <div class="col-sm-1 control-label">形式</div>
+                                    <div class="col-sm-2">
+                                        <div class="text" id="text3" contentEditable="true"></div>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <a class="form" href="javascript:;">形式
+                                            <ul class="hide">
+                                                <li><img src="/images/themecolor/form/1.png" alt="形式1"
+                                                         height="100px" width="212px"></li>
+                                                <li><img src="/images/themecolor/form/2.png" alt="形式2"
+                                                         height="100px" width="212px"></li>
+                                                <li><img src="/images/themecolor/form/3.png" alt="形式3"
+                                                         height="100px" width="212px"></li>
+                                                <li><img src="/images/themecolor/form/4.png" alt="形式4"
+                                                         height="100px" width="212px"></li>
+                                                <li><img src="/images/themecolor/form/5.png" alt="形式5"
+                                                         height="100px" width="212px"></li>
+                                                <li><img src="/images/themecolor/form/6.png" alt="形式6"
+                                                         height="100px" width="212px"></li>
+                                                <li><img src="/images/themecolor/form/7.png" alt="形式7"
+                                                         height="100px" width="212px"></li>
+                                                <li><img src="/images/themecolor/form/8.png" alt="形式8"
+                                                         height="100px" width="212px"></li>
+                                            </ul>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <br><br>
+                            <div class="row">
+                                <div class="form-group required">
+                                    <div class="col-sm-1 control-label">公众号名称</div>
+                                    <div class="col-sm-2">
+                                        <select class="form-control" id="appId" name="appId"
+                                                v-model="themecolor.appId">
+                                            <option :value="item.id" v-for="item in categoryList">{{item.name}}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <br><br>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-1 control-label"></div>
+                                    <input type="button" class="btn btn-primary" @click="validate" value="确定"/>
+                                    &nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="showTableList"
+                                                       value="返回"/>
+                                </div>
+                            </div>
+                            <br><br>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script src="../../libs/jquery.min.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../libs/bootstrap.min.js"></script>
+<script src="../../libs/vue.min.js"></script>
+<!--bootstrap-table-->
+<script src="../../plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="../../plugins/bootstrap-table/locale/bootstrap-table-zh-CN.js"></script>
+<!--bootstrap-validator-->
+<script src="../../plugins/bootstrap-validator/js/bootstrap-validator.min.js"></script>
+<script src="../../plugins/bootstrap-validator/js/zh_CN.min.js"></script>
+<script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+<script src="../../js/common.js"></script>
+
+<!--可搜索下拉js-->
+<script src="../../plugins/bootstrap-select/js/bootstrap-select.min.js"></script>
+<script src="../../plugins/bootstrap-select/js/i18n/defaults-zh_CN.min.js"></script>
+
+
+<script src="../../js/modules/store/themecolor.js"></script>
+
+
+<script type="text/javascript">
+    $(function () {
+        /* $(".selectpicker").selectpicker({
+             noneSelectedText: '请选择'
+         });*/
+        $(window).on('load', function () {
+            $('.selectpicker').selectpicker('val', '');
+            $('.selectpicker').selectpicker('refresh');
+        });
+
+        //下拉数据加载
+        $.ajax({
+            type: 'get',
+            url: baseURL + "wechat/wxapp/selectAll",
+            dataType: 'json',
+            success: function (datas) {//返回list数据并循环获取
+                var wxlist = datas.wxAppList;
+                var select = $("#appIdParam");
+                select.append("<option value=''>全部门店</option>");
+                for (var i = 0; i < wxlist.length; i++) {
+                    select.append("<option value='" + wxlist[i].id + "'>" + wxlist[i].name + "</option>");
+                }
+                $('.selectpicker').selectpicker('val', '');
+                $('.selectpicker').selectpicker('refresh');
+            }
+        });
+
+        $("#appIdParam").change('shown.bs.select', function (e) {
+            vm.queryParams.appId = $("#appIdParam").val();
+        })
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "hints": [],
+  "groups": [
+    {
+      "sourceType": "com.wzlue.common.ueditor.upload.StorageManager",
+      "name": "nginx",
+      "type": "com.wzlue.common.ueditor.upload.StorageManager"
+    }
+  ],
+  "properties": [
+    {
+      "sourceType": "com.wzlue.common.ueditor.upload.StorageManager",
+      "name": "nginx.fileurl",
+      "type": "java.lang.String"
+    }
+  ]
+}

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.recruitment.dao.FeeReturnDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.recruitment.entity.FeeReturnEntity" id="feeReturnMap">
+        <result property="id" column="id"/>
+        <result property="days" column="days"/>
+        <result property="reward" column="reward"/>
+        <result property="recruitmentId" column="recruitment_id"/>
+        <result property="appId" column="app_id"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+        <result property="delFlag" column="del_flag"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.recruitment.entity.FeeReturnEntity">
+		SELECT * FROM fee_return WHERE id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.recruitment.entity.FeeReturnEntity">
+        SELECT * FROM fee_return
+        <where>
+            1=1
+            <if test="recruitmentId!=null and recruitmentId!=''">
+                and recruitment_id = #{recruitmentId}
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+		SELECT count(*) FROM fee_return
+        <where>
+            1=1
+            <if test="recruitmentId!=null and recruitmentId!=''">
+                and recruitment_id = #{recruitmentId}
+            </if>
+        </where>
+	</select>
+
+    <insert id="save" parameterType="com.wzlue.recruitment.entity.FeeReturnEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO fee_return
+		(
+				`days`,
+				`reward`,
+				`recruitment_id`,
+				`app_id`,
+				`create_id`,
+				`create_date`,
+				`update_id`,
+				`update_date`,
+				`del_flag`
+									)
+		VALUES
+		(
+				#{days},
+				#{reward},
+				#{recruitmentId},
+				#{appId},
+				#{createId},
+				#{createDate},
+				#{updateId},
+				#{updateDate},
+				#{delFlag}
+									)
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.recruitment.entity.FeeReturnEntity">
+        UPDATE fee_return
+        <set>
+            <if test="days != null">`days` = #{days},</if>
+            <if test="reward != null">`reward` = #{reward},</if>
+            <if test="recruitmentId != null">`recruitment_id` = #{recruitmentId},</if>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="createId != null">`create_id` = #{createId},</if>
+            <if test="createDate != null">`create_date` = #{createDate},</if>
+            <if test="updateId != null">`update_id` = #{updateId},</if>
+            <if test="updateDate != null">`update_date` = #{updateDate},</if>
+            <if test="delFlag != null">`del_flag` = #{delFlag}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM fee_return WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM fee_return WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="saveList" parameterType="java.util.List">
+        INSERT INTO fee_return
+        (
+        `days`,
+        `reward`,
+        `recruitment_id`,
+        `app_id`,
+        `create_id`,
+        `create_date`,
+        `update_id`,
+        `update_date`,
+        `del_flag`
+        )
+        VALUES
+        <foreach item="item" collection="list" separator=",">
+            (
+            #{item.days},
+            #{item.reward},
+            #{item.recruitmentId},
+            #{item.appId},
+            #{item.createId},
+            now(),
+            #{item.updateId},
+            #{item.updateDate},
+            #{item.delFlag}
+            )
+        </foreach>
+    </insert>
+
+    <select id="queryByRecruitmentId" resultType="com.wzlue.recruitment.entity.FeeReturnEntity">
+        SELECT * FROM fee_return WHERE recruitment_id = #{id}
+    </select>
+
+    <select id="queryMaxDay" resultType="int">
+       SELECT MAX(days) FROM fee_return WHERE recruitment_id = #{id}
+    </select>
+
+    <delete id="deleteByRecruitmentId">
+		DELETE FROM fee_return WHERE recruitment_id = #{recruitmentId}
+	</delete>
+</mapper>

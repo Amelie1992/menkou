@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.doorway.dao.TDoorwayHotlineDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.doorway.entity.TDoorwayHotlineEntity" id="tDoorwayHotlineMap">
+        <result property="id" column="id"/>
+        <result property="image" column="image"/>
+        <result property="hotline" column="hotline"/>
+        <result property="appId" column="app_id"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+        <result property="delFlag" column="del_flag"/>
+    </resultMap>
+
+	<select id="queryObject" resultType="com.wzlue.doorway.entity.TDoorwayHotlineEntity">
+		SELECT * FROM t_doorway_hotline WHERE id = #{value}
+	</select>
+
+	<select id="queryList" resultType="com.wzlue.doorway.entity.TDoorwayHotlineEntity">
+		SELECT * FROM t_doorway_hotline
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+			<otherwise>
+                ORDER BY id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			LIMIT #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		SELECT count(*) FROM t_doorway_hotline
+	</select>
+	 
+	<insert id="save" parameterType="com.wzlue.doorway.entity.TDoorwayHotlineEntity" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_doorway_hotline
+		(
+																				`image`, 
+																	`hotline`, 
+																	`app_id`, 
+																	`create_id`, 
+																	`create_date`, 
+																	`update_id`, 
+																	`update_date`, 
+																	`del_flag`
+									)
+		VALUES
+		(
+																				#{image}, 
+																	#{hotline}, 
+																	#{appId}, 
+																	#{createId}, 
+																	#{createDate}, 
+																	#{updateId}, 
+																	#{updateDate}, 
+																	#{delFlag}
+									)
+	</insert>
+	 
+	<update id="update" parameterType="com.wzlue.doorway.entity.TDoorwayHotlineEntity">
+		UPDATE t_doorway_hotline
+		<set>
+																				<if test="image != null">`image` = #{image}, </if>
+																	<if test="hotline != null">`hotline` = #{hotline}, </if>
+																	<if test="appId != null">`app_id` = #{appId}, </if>
+																	<if test="createId != null">`create_id` = #{createId}, </if>
+																	<if test="createDate != null">`create_date` = #{createDate}, </if>
+																	<if test="updateId != null">`update_id` = #{updateId}, </if>
+																	<if test="updateDate != null">`update_date` = #{updateDate}, </if>
+																	<if test="delFlag != null">`del_flag` = #{delFlag}</if>
+									</set>
+		WHERE id = #{id}
+	</update>
+	
+	<delete id="delete">
+		DELETE FROM t_doorway_hotline WHERE id = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		DELETE FROM t_doorway_hotline WHERE id IN
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

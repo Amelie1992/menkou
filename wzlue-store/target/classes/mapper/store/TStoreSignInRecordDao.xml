@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.store.dao.TStoreSignInRecordDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.store.entity.TStoreSignInRecordEntity" id="tStoreSignInRecordMap">
+        <result property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="openId" column="open_id"/>
+        <result property="appId" column="app_id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="remarks" column="remarks"/>
+        <result property="countDate" column="count_date"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.store.entity.TStoreSignInRecordEntity">
+		SELECT * FROM t_store_sign_in_record WHERE id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.store.entity.TStoreSignInRecordEntity">
+        SELECT
+        a.id,
+        a.user_id,
+        a.open_id,
+        a.app_id,
+        a.create_time,
+        a.remarks,
+        a.count_date,
+        b.nick_name wname
+        FROM t_store_sign_in_record a
+        left join wx_user b on a.user_id = b.id
+
+        <where>
+            <if test="userId != null and userId.trim() != ''">
+              and a.user_id = #{userId}
+            </if>
+
+
+            <if test="createTime!=null and createTime!=''">
+                 and DATE_FORMAT(a.create_time, '%Y%m') =  #{createTime}
+
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+		SELECT count(*) FROM t_store_sign_in_record a
+        <where>
+            <if test="userId != null and userId.trim() != '' ">
+                and a.user_id = #{userId}
+            </if>
+
+            <if test="createTime!=null and createTime!=''">
+                and DATE_FORMAT(a.create_time, '%Y%m') =  #{createTime}
+
+            </if>
+        </where>
+	</select>
+
+
+    <select id="queryTodaySignInRecord" resultType="int">
+		select count(*) from t_store_sign_in_record where to_days(create_time) = to_days(#{createTime}) and user_id=#{userId};
+	</select>
+
+
+    <select id="queryYesterdaySignInRecord" resultType="com.wzlue.store.entity.TStoreSignInRecordEntity">
+		SELECT * FROM t_store_sign_in_record WHERE to_days(create_time) = to_days(#{createTime}) and user_id=#{userId};
+	</select>
+
+
+    <insert id="save" parameterType="com.wzlue.store.entity.TStoreSignInRecordEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO t_store_sign_in_record
+		(
+																				`open_id`,
+																				`user_id`,
+																	`app_id`, 
+																	`create_time`, 
+																	`remarks`, 
+																	`count_date`
+									)
+		VALUES
+		(
+																				#{openId},
+																				#{userId},
+																	#{appId}, 
+																	#{createTime}, 
+																	#{remarks}, 
+																	#{countDate}
+									)
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.store.entity.TStoreSignInRecordEntity">
+        UPDATE t_store_sign_in_record
+        <set>
+            <if test="openId != null">`open_id` = #{openId},</if>
+            <if test="userId != null">`user_id` = #{userId},</if>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="createTime != null">`create_time` = #{createTime},</if>
+            <if test="remarks != null">`remarks` = #{remarks},</if>
+            <if test="countDate != null">`count_date` = #{countDate}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM t_store_sign_in_record WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM t_store_sign_in_record WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

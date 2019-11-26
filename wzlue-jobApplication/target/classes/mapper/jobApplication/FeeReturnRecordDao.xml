@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.jobApplication.dao.FeeReturnRecordDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.jobApplication.entity.FeeReturnRecordEntity" id="feeReturnRecordMap">
+        <result property="id" column="id"/>
+        <result property="jobId" column="job_id"/>
+        <result property="feeId" column="fee_id"/>
+        <result property="amount" column="amount"/>
+        <result property="type" column="type"/>
+        <result property="remark" column="remark"/>
+        <result property="appId" column="app_id"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+
+        <!--报名用户信息-->
+        <association property="jobApplication" javaType="com.wzlue.jobApplication.entity.JobApplicationEntity">
+            <result property="id" column="jid"/>
+            <result property="openid" column="openid"/>
+            <result property="nickName" column="nick_name"/>
+            <result property="realName" column="real_name"/>
+            <result property="shopRecruitmentId" column="shop_recruitment_id"/>
+            <result property="stateFeedback" column="state_feedback"/>
+        </association>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.jobApplication.entity.FeeReturnRecordEntity">
+		SELECT * FROM fee_return_record WHERE id = #{value}
+	</select>
+
+    <select id="queryList" resultMap="feeReturnRecordMap">
+        SELECT *,ja.id AS jid
+        FROM fee_return_record frr
+        left join job_application ja ON ja.id = frr.job_id
+        left join wx_app b on frr.app_id = b.id AND b.del_flag = 0
+        <where>
+            1=1
+            <if test="appId != null and appId.trim() != ''">
+                AND frr.app_id = #{appId}
+            </if>
+            <if test="jobId!='' and jobId!=null">
+                and frr.job_id = #{jobId}
+            </if>
+            <if test="type!='' and type!=null">
+                and frr.type = #{type}
+            </if>
+            and frr.del_flag = 2
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY frr.create_date desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+		SELECT count(*)
+        FROM fee_return_record frr
+        left join job_application ja ON ja.id = frr.job_id
+        left join wx_app b on frr.app_id = b.id AND b.del_flag = 0
+        <where>
+            1=1
+            <if test="appId != null and appId.trim() != ''">
+                AND frr.app_id = #{appId}
+            </if>
+            <if test="jobId!='' and jobId!=null">
+                and frr.job_id = #{jobId}
+            </if>
+            <if test="type!='' and type!=null">
+                and frr.type = #{type}
+            </if>
+            and frr.del_flag = 2
+        </where>
+	</select>
+
+    <!--返费规则是否已返费-->
+    <select id="feeIsExist" resultType="int">
+        SELECT COUNT(1) FROM fee_return_record
+        <where>
+            1=1
+            <if test="jobId != null and jobId != ''">
+                AND job_id = #{jobId}
+            </if>
+            <if test="feeId !='' and feeId != null">
+                and fee_id = #{feeId}
+            </if>
+        </where>
+    </select>
+
+
+    <!--返费记录今日是否已返费-->
+    <select id="feeIsExistOfToday" resultType="int">
+        SELECT COUNT(1) FROM fee_return_record
+        <where>
+            1=1
+            <if test="jobId != null and jobId != ''">
+                AND job_id = #{jobId}
+            </if>
+            <if test="createDate!=null and createDate!=''">
+               and DATE_FORMAT(create_date, '%Y-%m-%d') = #{createDate}
+            </if>
+
+        </where>
+    </select>
+
+
+    <select id="userFeeReturn" resultMap="feeReturnRecordMap">
+        SELECT *,ja.id AS jid
+        FROM fee_return_record frr
+        left join job_application ja ON ja.id = frr.job_id
+        left join wx_app b on frr.app_id = b.id AND b.del_flag = 0
+        <where>
+            1=1
+            <if test="appId != null and appId.trim() != ''">
+                AND frr.app_id = #{appId}
+            </if>
+            <if test="openid != null and openid.trim() != ''">
+                AND ja.openid = #{openid}
+            </if>
+            <if test="type!='' and type!=null">
+                and frr.type = #{type}
+            </if>
+            <![CDATA[ and ja.state_feedback >=4 ]]>
+            and frr.del_flag = 2
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY frr.create_date desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <insert id="save" parameterType="com.wzlue.jobApplication.entity.FeeReturnRecordEntity">
+		INSERT INTO fee_return_record
+		(
+													`id`, 
+																	`job_id`,
+																	`fee_id`,
+																	`amount`, 
+																	`type`, 
+																	`remark`, 
+																	`app_id`, 
+																	`del_flag`, 
+																	`create_id`, 
+																	`create_date`, 
+																	`update_id`, 
+																	`update_date`
+									)
+		VALUES
+		(
+													#{id}, 
+																	#{jobId},
+																	#{feeId},
+																	#{amount}, 
+																	#{type}, 
+																	#{remark}, 
+																	#{appId}, 
+																	'2',
+																	#{createId}, 
+																	#{createDate}, 
+																	#{updateId}, 
+																	#{updateDate}
+									)
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.jobApplication.entity.FeeReturnRecordEntity">
+        UPDATE fee_return_record
+        <set>
+            <if test="jobId != null">`job_id` = #{jobId},</if>
+            <if test="amount != null">`amount` = #{amount},</if>
+            <if test="type != null">`type` = #{type},</if>
+            <if test="remark != null">`remark` = #{remark},</if>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="delFlag != null">`del_flag` = #{delFlag},</if>
+            <if test="createId != null">`create_id` = #{createId},</if>
+            <if test="createDate != null">`create_date` = #{createDate},</if>
+            <if test="updateId != null">`update_id` = #{updateId},</if>
+            <if test="updateDate != null">`update_date` = #{updateDate}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM fee_return_record WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM fee_return_record WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <!--批量软删-->
+    <update id="updateAllFlag">
+        UPDATE fee_return_record set del_flag = '1'
+        WHERE id IN
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+</mapper>

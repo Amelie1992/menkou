@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.store.dao.TStoreConfigDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.store.entity.TStoreConfigEntity" id="tStoreConfigMap">
+        <result property="configId" column="config_id"/>
+        <result property="configType" column="config_type"/>
+        <result property="configValue" column="config_value"/>
+        <result property="rangeMin" column="range_min"/>
+        <result property="rangeMax" column="range_max"/>
+        <result property="configSort" column="config_sort"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.store.entity.TStoreConfigEntity">
+		SELECT * FROM t_store_config WHERE config_id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.store.entity.TStoreConfigEntity">
+        SELECT * FROM t_store_config
+        <where>
+            <if test="configType != null and configType != ''">
+                config_type = #{configType}
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY config_type ASC , config_sort ASC
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        SELECT count(*) FROM t_store_config
+        <where>
+            <if test="configType != null and configType.trim() != ''">
+                config_type = #{configType}
+            </if>
+        </where>
+    </select>
+
+
+    <select id="queryListByParam" resultType="com.wzlue.store.entity.TStoreConfigEntity">
+        SELECT
+        config_id,
+        config_value
+        FROM t_store_config
+        <where>
+
+            <if test="configType != null and configType.trim() != ''">
+                config_type = #{configType}
+            </if>
+
+        </where>
+
+
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY config_type ASC , config_sort ASC
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotalByParam" resultType="int">
+        SELECT count(*) FROM t_store_config
+        <where>
+
+            <if test="configType != null and configType.trim() != ''">
+                config_type = #{configType}
+            </if>
+
+        </where>
+    </select>
+
+
+
+    <!---->
+
+
+
+
+
+
+    <insert id="save" parameterType="com.wzlue.store.entity.TStoreConfigEntity" useGeneratedKeys="true"
+            keyProperty="configId">
+		INSERT INTO t_store_config
+		(
+																				`config_type`, 
+																	`config_value`, 
+																	`range_min`, 
+																	`range_max`, 
+																	`config_sort`
+									)
+		VALUES
+		(
+																				#{configType}, 
+																	#{configValue}, 
+																	#{rangeMin}, 
+																	#{rangeMax}, 
+																	#{configSort}
+									)
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.store.entity.TStoreConfigEntity">
+        UPDATE t_store_config
+        <set>
+            <if test="configType != null">`config_type` = #{configType},</if>
+            <if test="configValue != null">`config_value` = #{configValue},</if>
+            <if test="rangeMin != null">`range_min` = #{rangeMin},</if>
+            <if test="rangeMax != null">`range_max` = #{rangeMax},</if>
+            <if test="configSort != null">`config_sort` = #{configSort}</if>
+        </set>
+        WHERE config_id = #{configId}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM t_store_config WHERE config_id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM t_store_config WHERE config_id IN
+        <foreach item="configId" collection="array" open="(" separator="," close=")">
+            #{configId}
+        </foreach>
+    </delete>
+
+</mapper>

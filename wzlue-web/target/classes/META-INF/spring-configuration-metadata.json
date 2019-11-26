@@ -1,0 +1,129 @@
+{
+  "hints": [],
+  "groups": [
+    {
+      "sourceType": "com.wzlue.web.common.datasources.DynamicDataSourceConfig",
+      "name": "spring.datasource.druid.first",
+      "sourceMethod": "firstDataSource()",
+      "type": "javax.sql.DataSource"
+    },
+    {
+      "sourceType": "com.wzlue.web.common.datasources.DynamicDataSourceConfig",
+      "name": "spring.datasource.druid.second",
+      "sourceMethod": "secondDataSource()",
+      "type": "javax.sql.DataSource"
+    },
+    {
+      "sourceType": "com.wzlue.web.common.config.TaskThreadPoolConfig",
+      "name": "spring.task.pool",
+      "type": "com.wzlue.web.common.config.TaskThreadPoolConfig"
+    },
+    {
+      "sourceType": "com.wzlue.web.common.config.WxMaProperties",
+      "name": "wechat.miniapp",
+      "type": "com.wzlue.web.common.config.WxMaProperties"
+    },
+    {
+      "sourceType": "com.wzlue.web.common.config.WxPayProperties",
+      "name": "wechat.pay",
+      "type": "com.wzlue.web.common.config.WxPayProperties"
+    }
+  ],
+  "properties": [
+    {
+      "sourceType": "com.wzlue.web.common.config.TaskThreadPoolConfig",
+      "defaultValue": 0,
+      "name": "spring.task.pool.core-pool-size",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.wzlue.web.common.config.TaskThreadPoolConfig",
+      "defaultValue": 0,
+      "name": "spring.task.pool.keep-alive-seconds",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.wzlue.web.common.config.TaskThreadPoolConfig",
+      "defaultValue": 0,
+      "name": "spring.task.pool.max-pool-size",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.wzlue.web.common.config.TaskThreadPoolConfig",
+      "defaultValue": 0,
+      "name": "spring.task.pool.queue-capacity",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.wzlue.web.common.config.WxMaProperties",
+      "name": "wechat.miniapp.aes-key",
+      "description": "设置微信小程序的EncodingAESKey",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.wzlue.web.common.config.WxMaProperties",
+      "name": "wechat.miniapp.appid",
+      "description": "设置微信小程序的appid",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.wzlue.web.common.config.WxMaProperties",
+      "name": "wechat.miniapp.msg-data-format",
+      "description": "消息格式，XML或者JSON",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.wzlue.web.common.config.WxMaProperties",
+      "name": "wechat.miniapp.secret",
+      "description": "设置微信小程序的Secret",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.wzlue.web.common.config.WxMaProperties",
+      "name": "wechat.miniapp.token",
+      "description": "设置微信小程序的token",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.wzlue.web.common.config.WxPayProperties",
+      "name": "wechat.pay.app-id",
+      "description": "设置微信公众号的appid",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.wzlue.web.common.config.WxPayProperties",
+      "name": "wechat.pay.key-path",
+      "description": "apiclient_cert.p12的文件的绝对路径",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.wzlue.web.common.config.WxPayProperties",
+      "name": "wechat.pay.mch-id",
+      "description": "微信支付商户号",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.wzlue.web.common.config.WxPayProperties",
+      "name": "wechat.pay.mch-key",
+      "description": "微信支付商户密钥",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.wzlue.web.common.config.WxPayProperties",
+      "name": "wechat.pay.notify-url",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.wzlue.web.common.config.WxPayProperties",
+      "name": "wechat.pay.sub-app-id",
+      "description": "服务商模式下的子商户公众账号ID，普通模式请不要配置，请在配置文件中将对应项删除",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.wzlue.web.common.config.WxPayProperties",
+      "name": "wechat.pay.sub-mch-id",
+      "description": "服务商模式下的子商户号，普通模式请不要配置，最好是请在配置文件中将对应项删除",
+      "type": "java.lang.String"
+    }
+  ]
+}

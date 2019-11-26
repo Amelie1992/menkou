@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.recruitment.dao.ProvidePersonnelDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.recruitment.entity.ProvidePersonnelEntity" id="providePersonnelMap">
+        <result property="id" column="id"/>
+        <result property="shopRecruitmentId" column="shop_recruitment_id"/>
+        <result property="uploadHistoryId" column="upload_history_id"/>
+        <result property="name" column="name"/>
+        <result property="sex" column="sex"/>
+        <result property="age" column="age"/>
+        <result property="province" column="province"/>
+        <result property="city" column="city"/>
+        <result property="status" column="status"/>
+        <result property="reason" column="reason"/>
+        <result property="appId" column="app_id"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.recruitment.entity.ProvidePersonnelEntity">
+		SELECT pp.*,
+		(select b.shortname from sys_area b WHERE b.id=pp.province) provinceStr,
+		(select b.shortname from sys_area b WHERE b.id=pp.city) cityStr,
+		(select sr.recruitment_firm from shop_recruitment sr WHERE sr.id=pp.shop_recruitment_id) shopTitle
+		FROM provide_personnel pp
+		WHERE pp.id = #{value}
+	</select>
+
+    <select id="providePersonnelList" resultType="com.wzlue.recruitment.entity.ProvidePersonnelEntity">
+        SELECT
+        *
+        FROM
+        provide_personnel pp
+        WHERE pp.upload_history_id = #{value}
+    </select>
+
+    <select id="queryList" resultType="com.wzlue.recruitment.entity.ProvidePersonnelEntity">
+        SELECT pp.*,
+        (select b.shortname from sys_area b WHERE b.id=pp.province) provinceStr,
+        (select b.shortname from sys_area b WHERE b.id=pp.city) cityStr,
+        (select sr.recruitment_firm from shop_recruitment sr WHERE sr.id=pp.shop_recruitment_id) shopTitle
+        FROM provide_personnel pp
+        left join wx_app b on pp.app_id = b.id AND b.del_flag = 0
+        <where>
+            1=1
+            and pp.del_flag = 2
+            <if test="appId != null and appId.trim() != ''">
+                AND pp.app_id = #{appId}
+            </if>
+            <if test="name!='' and name!=null">
+                and pp.name like CONCAT('%',#{name},'%')
+            </if>
+            <if test="uploadHistoryId!='' and uploadHistoryId!=null">
+                and pp.upload_history_id = #{uploadHistoryId}
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY pp.id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+		SELECT count(*) FROM provide_personnel pp
+        left join wx_app b on pp.app_id = b.id AND b.del_flag = 0
+        <where>
+            1=1
+            and pp.del_flag = 2
+            <if test="appId != null and appId.trim() != ''">
+                AND pp.app_id = #{appId}
+            </if>
+            <if test="appid != null and appid.trim() != ''">
+                AND b.id = #{appid}
+            </if>
+            <if test="name!='' and name!=null">
+                and pp.name like CONCAT('%',#{name},'%')
+            </if>
+            <if test="uploadHistoryId!='' and uploadHistoryId!=null">
+                and pp.upload_history_id = #{uploadHistoryId}
+            </if>
+        </where>
+	</select>
+
+    <insert id="save" parameterType="com.wzlue.recruitment.entity.ProvidePersonnelEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO provide_personnel (
+            `shop_recruitment_id`,
+            `upload_history_id`,
+            `name`,
+            `sex`,
+            `age`,
+            `province`,
+            `city`,
+            `status`,
+            `reason`,
+            `app_id`,
+            `del_flag`,
+            `create_id`,
+            `create_date`,
+            `update_id`,
+            `update_date`
+        )
+        VALUES
+            (
+                #{shopRecruitmentId},
+                #{uploadHistoryId},
+                #{name},
+                #{sex},
+                #{age},
+                #{province},
+                #{city},
+                #{status},
+                #{reason},
+                #{appId},
+                '2',
+                #{createId},
+                #{createDate},
+                #{updateId},
+                #{updateDate}
+            )
+	</insert>
+
+    <insert id="saveList" parameterType="java.util.List" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO provide_personnel (
+            `shop_recruitment_id`,
+            `upload_history_id`,
+            `name`,
+            `sex`,
+            `age`,
+            `province`,
+            `city`,
+            `status`,
+            `reason`,
+            `app_id`,
+            `del_flag`,
+            `create_id`,
+            `create_date`,
+            `update_id`,
+            `update_date`
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.shopRecruitmentId},
+                #{item.uploadHistoryId},
+                #{item.name},
+                #{item.sex},
+                #{item.age},
+                #{item.province},
+                #{item.city},
+                #{item.status},
+                #{item.reason},
+                #{item.appId},
+                '2',
+                #{item.createId},
+                #{item.createDate},
+                #{item.updateId},
+                #{item.updateDate}
+            )
+        </foreach>
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.recruitment.entity.ProvidePersonnelEntity">
+        UPDATE provide_personnel
+        <set>
+            <if test="shopRecruitmentId != null">`shop_recruitment_id` = #{shopRecruitmentId},</if>
+            <if test="uploadHistoryId != null">`upload_history_id` = #{uploadHistoryId},</if>
+            <if test="name != null">`name` = #{name},</if>
+            <if test="sex != null">`sex` = #{sex},</if>
+            <if test="age != null">`age` = #{age},</if>
+            <if test="province != null">`province` = #{province},</if>
+            <if test="city != null">`city` = #{city},</if>
+            <if test="status != null">`status` = #{status},</if>
+            <if test="reason != null">`reason` = #{reason},</if>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="delFlag != null">`del_flag` = #{delFlag},</if>
+            <if test="createId != null">`create_id` = #{createId},</if>
+            <if test="createDate != null">`create_date` = #{createDate},</if>
+            <if test="updateId != null">`update_id` = #{updateId},</if>
+            <if test="updateDate != null">`update_date` = #{updateDate}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+    <update id="updateByHistoryId">
+        UPDATE provide_personnel
+        <set>
+            <if test="shopRecruitmentId != null">`shop_recruitment_id` = #{shopRecruitmentId},</if>
+            <if test="name != null">`name` = #{name},</if>
+            <if test="sex != null">`sex` = #{sex},</if>
+            <if test="age != null">`age` = #{age},</if>
+            <if test="province != null">`province` = #{province},</if>
+            <if test="city != null">`city` = #{city},</if>
+            <if test="status != null">`status` = #{status},</if>
+            <if test="reason != null">`reason` = #{reason},</if>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="delFlag != null">`del_flag` = #{delFlag},</if>
+            <if test="createId != null">`create_id` = #{createId},</if>
+            <if test="createDate != null">`create_date` = #{createDate},</if>
+            <if test="updateId != null">`update_id` = #{updateId},</if>
+            <if test="updateDate != null">`update_date` = #{updateDate}</if>
+        </set>
+        WHERE upload_history_id = #{uploadHistoryId} AND status = 1
+    </update>
+
+    <delete id="delete">
+		DELETE FROM provide_personnel WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM provide_personnel WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

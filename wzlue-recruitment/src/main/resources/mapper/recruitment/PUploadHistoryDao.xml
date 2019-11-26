@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.recruitment.dao.PUploadHistoryDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.recruitment.entity.PUploadHistoryEntity" id="pUploadHistoryMap">
+        <result property="id" column="id"/>
+        <result property="shopRecruitmentId" column="shop_recruitment_id"/>
+        <result property="num" column="num"/>
+        <result property="remark" column="remark"/>
+        <result property="status" column="status"/>
+        <result property="reason" column="reason"/>
+        <result property="appId" column="app_id"/>
+        <result property="appName" column="app_name"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+        <result property="confirm" column="confirm"/>
+        <result property="errorInfo" column="error_info"/>
+        <!--门店招聘-->
+        <association property="shopRecruitment" javaType="com.wzlue.recruitment.entity.ShopRecruitmentEntity">
+            <result property="id" column="id"/>
+            <result property="recruitmentFirm" column="recruitment_firm"/>
+            <result property="logo" column="logo"/>
+            <result property="title" column="title"/>
+            <result property="salary" column="salary"/>
+        </association>
+        <!--供人名单-->
+        <collection property="providePersonnel" column="id"
+                    select="com.wzlue.recruitment.dao.ProvidePersonnelDao.providePersonnelList"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.recruitment.entity.PUploadHistoryEntity">
+		SELECT puh.*,
+		(select sr.recruitment_firm from shop_recruitment sr WHERE sr.id = puh.shop_recruitment_id) shopTitle
+		FROM p_upload_history puh WHERE puh.id = #{value}
+	</select>
+
+    <!--历史清单列表-->
+    <select id="queryList" resultMap="pUploadHistoryMap">
+        SELECT puh.*,sr.*,b.name app_name FROM p_upload_history puh
+        left join shop_recruitment sr on sr.id = puh.shop_recruitment_id
+        left join wx_app b on puh.app_id = b.id AND b.del_flag = 0
+        <where>
+            1=1
+            <if test="appId != null and appId.trim() != ''">
+                AND puh.app_id = #{appId}
+            </if>
+            <if test="title!='' and title!=null">
+                and sr.title like CONCAT('%',#{title},'%')
+            </if>
+            <if test="remark!='' and remark!=null">
+                and puh.remark like CONCAT('%',#{remark},'%')
+            </if>
+            <if test="confirm!='' and confirm!=null">
+                and puh.confirm = #{confirm}
+            </if>
+
+            <if test="status!='' and status!=null">
+                and puh.status = #{status}
+            </if>
+
+            <if test="beginTime!=null and beginTime!=''">
+                <![CDATA[   and DATE_FORMAT(puh.create_date, '%Y-%m-%d') >=  DATE_FORMAT(#{beginTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                <![CDATA[  and DATE_FORMAT(puh.create_date, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="shopRecruitmentId!='' and shopRecruitmentId!=null">
+                and puh.shop_recruitment_id = #{shopRecruitmentId}
+            </if>
+            <if test="cancel!=null and cancel!='' and cancel==5">
+                and confirm != #{cancel}
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY puh.create_date desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        SELECT count(*) FROM p_upload_history puh
+        left join shop_recruitment sr on sr.id = puh.shop_recruitment_id
+        left join wx_app b on puh.app_id = b.id AND b.del_flag = 0
+        <where>
+            1=1
+            <if test="appId != null and appId.trim() != ''">
+                AND puh.app_id = #{appId}
+            </if>
+            <if test="title!='' and title!=null">
+                and sr.title like CONCAT('%',#{title},'%')
+            </if>
+            <if test="remark!='' and remark!=null">
+                and puh.remark like CONCAT('%',#{remark},'%')
+            </if>
+            <if test="status!='' and status!=null">
+                and puh.status = #{status}
+            </if>
+            <if test="beginTime!=null and beginTime!=''">
+                <![CDATA[   and DATE_FORMAT(puh.create_date, '%Y-%m-%d') >=  DATE_FORMAT(#{beginTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                <![CDATA[  and DATE_FORMAT(puh.create_date, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="shopRecruitmentId!='' and shopRecruitmentId!=null">
+                and puh.shop_recruitment_id = #{shopRecruitmentId}
+            </if>
+            <if test="cancel!=null and cancel!='' and cancel==5">
+                and confirm != #{cancel}
+            </if>
+        </where>
+	</select>
+
+    <insert id="save" parameterType="com.wzlue.recruitment.entity.PUploadHistoryEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO p_upload_history (
+            `shop_recruitment_id`,
+            `num`,
+            `remark`,
+            `status`,
+            `reason`,
+            `app_id`,
+            `del_flag`,
+            `create_id`,
+            `create_date`,
+            `update_id`,
+            `update_date`,
+            `confirm`
+        )
+        VALUES
+            (
+                #{shopRecruitmentId},
+                #{num},
+                #{remark},
+                1,
+                #{reason},
+                #{appId},
+                #{delFlag},
+                #{createId},
+                #{createDate},
+                #{updateId},
+                #{updateDate},
+                1
+            )
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.recruitment.entity.PUploadHistoryEntity">
+        UPDATE p_upload_history
+        <set>
+            <if test="shopRecruitmentId != null">`shop_recruitment_id` = #{shopRecruitmentId},</if>
+            <if test="num != null">`num` = #{num},</if>
+            <if test="remark != null">`remark` = #{remark},</if>
+            <if test="status != null">`status` = #{status},</if>
+            <if test="reason != null">`reason` = #{reason},</if>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="delFlag != null">`del_flag` = #{delFlag},</if>
+            <if test="createId != null">`create_id` = #{createId},</if>
+            <if test="createDate != null">`create_date` = #{createDate},</if>
+            <if test="updateId != null">`update_id` = #{updateId},</if>
+            <if test="updateDate != null">`update_date` = #{updateDate},</if>
+            <if test="confirm != null">`confirm` = #{confirm},</if>
+            <if test="errorInfo != null">`error_info` = #{errorInfo}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM p_upload_history WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM p_upload_history WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <update id="confirm">
+        UPDATE p_upload_history
+        <set>
+            <if test="confirm != null">`confirm` = #{confirm},</if>
+            <if test="errorInfo != null and errorInfo.trim() != '' ">`error_info` = #{errorInfo}</if>
+        </set>
+        WHERE id IN
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+</mapper>

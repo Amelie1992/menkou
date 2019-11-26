@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.jobApplication.dao.BonusRecordDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.jobApplication.entity.BonusRecordEntity" id="bonusRecordMap">
+        <result property="id" column="id"/>
+        <result property="openid" column="openid"/>
+        <result property="jobApplicationId" column="job_application_id"/>
+        <result property="amount" column="amount"/>
+        <result property="type" column="type"/>
+        <result property="remark" column="remark"/>
+        <result property="appId" column="app_id"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+    </resultMap>
+
+	<select id="queryObject" resultType="com.wzlue.jobApplication.entity.BonusRecordEntity">
+		SELECT * FROM bonus_record WHERE id = #{value}
+	</select>
+
+	<select id="queryList" resultType="com.wzlue.jobApplication.entity.BonusRecordEntity">
+		SELECT
+		a.*,
+		b.openid openid2, b.nick_name nickName2,
+		c.recruitment_firm zpCompany, c.title zpTitle,
+		d.nick_name wname
+		FROM bonus_record a
+		left join job_application b on  a.job_application_id = b.id
+		left join shop_recruitment c on b.shop_recruitment_id = c.id
+		left join wx_user d on a.openid = d.id
+		<where>
+			1=1
+			<if test="openid!=null and openid!=''">
+				and a.openid = #{openid}
+			</if>
+			<if test="type!=null and type!=''">
+				and a.`type` = #{type}
+			</if>
+			<if test="createTime!=null and createTime!=''">
+				and DATE_FORMAT(a.create_date, '%Y%m') = #{createTime}
+			</if>
+		</where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+			<otherwise>
+                ORDER BY id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			LIMIT #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		SELECT count(*) FROM bonus_record
+		<where>
+			1=1
+			<if test="openid!=null and openid!=''">
+				and openid = #{openid}
+			</if>
+			<if test="type!=null and type!=''">
+				and `type` = #{type}
+			</if>
+			<if test="createTime!=null and createTime!=''">
+				and DATE_FORMAT(create_date, '%Y%m') = #{createTime}
+			</if>
+		</where>
+	</select>
+	 
+	<insert id="save" parameterType="com.wzlue.jobApplication.entity.BonusRecordEntity" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO bonus_record
+		(
+																				`openid`, 
+																	`job_application_id`, 
+																	`amount`, 
+																	`type`, 
+																	`remark`, 
+																	`app_id`, 
+																	`del_flag`, 
+																	`create_id`, 
+																	`create_date`, 
+																	`update_id`, 
+																	`update_date`
+									)
+		VALUES
+		(
+																				#{openid}, 
+																	#{jobApplicationId}, 
+																	#{amount}, 
+																	#{type}, 
+																	#{remark}, 
+																	#{appId}, 
+																	#{delFlag},
+																	#{createId}, 
+																	now(),
+																	#{updateId}, 
+																	#{updateDate}
+									)
+	</insert>
+	 
+	<update id="update" parameterType="com.wzlue.jobApplication.entity.BonusRecordEntity">
+		UPDATE bonus_record
+		<set>
+																				<if test="openid != null">`openid` = #{openid}, </if>
+																	<if test="jobApplicationId != null">`job_application_id` = #{jobApplicationId}, </if>
+																	<if test="amount != null">`amount` = #{amount}, </if>
+																	<if test="type != null">`type` = #{type}, </if>
+																	<if test="remark != null">`remark` = #{remark}, </if>
+																	<if test="appId != null">`app_id` = #{appId}, </if>
+																	<if test="delFlag != null">`del_flag` = #{delFlag}, </if>
+																	<if test="createId != null">`create_id` = #{createId}, </if>
+																	<if test="createDate != null">`create_date` = #{createDate}, </if>
+																	<if test="updateId != null">`update_id` = #{updateId}, </if>
+																	<if test="updateDate != null">`update_date` = #{updateDate}</if>
+									</set>
+		WHERE id = #{id}
+	</update>
+	
+	<delete id="delete">
+		DELETE FROM bonus_record WHERE id = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		DELETE FROM bonus_record WHERE id IN
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

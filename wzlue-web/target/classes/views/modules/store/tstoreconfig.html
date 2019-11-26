@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>门店配置表</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/AdminLTE.min.css">
+    <link rel="stylesheet" href="../../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+    <link rel="stylesheet" href="../../css/bootstrap-table.min.css">
+    <link rel="stylesheet" href="../../plugins/bootstrap-validator/css/bootstrap-validator.min.css">
+    <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../plugins/treegrid/jquery.treegrid.css">
+
+</head>
+<body>
+<div id="rrapp" v-cloak class="content-wrapper wzl-content-wrapper">
+    <section class="content-header">
+        <h1>
+            门店配置表 &nbsp;<small v-if="title!=''">{{title}}</small>
+        </h1>
+    </section>
+    <div v-show="showList">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <div class="box-header with-border">
+                            <div class="col-xs-2">
+                                <!--<input type="text"  class="form-control" v-model="queryParams.configType" placeholder="配置类型" />-->
+                                <select class="form-control" v-model="queryParams.configType">
+                                    <option value="">配置类型</option>
+                                    <option :value="item.value" v-for="item in typeList">{{item.label}}</option>
+
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" @click="query"><i class="fa fa-search"></i>&nbsp;{{user_Store == 0 ? '查询' : '刷新'}}</button>
+                            <button v-if="hasPermission('store:tstoreconfig:save')" class="btn btn-success"
+                                    @click="add">
+                                <i class="fa fa-plus"></i>&nbsp;新增
+                            </button>
+                            <button v-if="hasPermission('store:tstoreconfig:update')" class="btn btn-warning"
+                                    @click="update">
+                                <i class="fa fa-trash-o"></i>&nbsp;修改
+                            </button>
+                            <button v-if="hasPermission('store:tstoreconfig:delete')" class="btn btn-danger"
+                                    @click="del">
+                                <i class="fa fa-trash-o"></i>&nbsp;删除
+                            </button>
+                        </div>
+                        <div class="box-body">
+                            <div class="table-responsive">
+                                <table id="table"></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div v-show="!showList">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <form class="form-horizontal">
+                            <div class="row">
+                                <div class="form-group required">
+                                    <div class="col-sm-2 control-label">配置类型</div>
+                                    <div class="col-sm-8">
+                                        <!--<input type="text" name="configType" class="form-control" v-model="tStoreConfig.configType" placeholder="配置类型"/>-->
+                                        <select class="form-control" v-model="tStoreConfig.configType" id = "configType"
+                                                placeholder="配置类型" >
+                                            <option :value="item.value" v-for="item in typeList">{{item.label}}</option>
+
+
+                                        </select>
+
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">配置内容</div>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="configValue" class="form-control"
+                                               v-model="tStoreConfig.configValue" placeholder="配置内容"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">最小范围</div>
+                                    <div class="col-sm-8">
+                                        <input type="number" name="rangeMin" class="form-control" id="rangeMin"
+                                               v-model="tStoreConfig.rangeMin" placeholder="最小范围"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">最大范围</div>
+                                    <div class="col-sm-8">
+                                        <input type="number" name="rangeMax" class="form-control" id="rangeMax"
+                                               v-model="tStoreConfig.rangeMax" placeholder="最大范围"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">排序</div>
+                                    <div class="col-sm-8">
+                                        <input type="number" name="configSort" class="form-control"
+                                               v-model="tStoreConfig.configSort" placeholder="排序"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label"></div>
+                                    <input type="button" class="btn btn-primary" @click="validate" value="确定"/>
+                                    &nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="showTableList"
+                                                       value="返回"/>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script src="../../libs/jquery.min.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../libs/bootstrap.min.js"></script>
+<script src="../../libs/vue.min.js"></script>
+<!--bootstrap-table-->
+<script src="../../plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="../../plugins/bootstrap-table/locale/bootstrap-table-zh-CN.js"></script>
+<!--bootstrap-validator-->
+<script src="../../plugins/bootstrap-validator/js/bootstrap-validator.min.js"></script>
+<script src="../../plugins/bootstrap-validator/js/zh_CN.min.js"></script>
+<script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+<script src="../../js/common.js"></script>
+
+<script src="../../js/modules/store/tstoreconfig.js"></script>
+
+<script>
+
+    $(function(){
+        $("#configType").change(function(){
+            var selectValue = $(this).children('option:selected').val(); //这就是selected的值
+            if ( selectValue == 1 || selectValue == 6) {
+                $("#rangeMin").attr('disabled', 'disabled')
+                $("#rangeMax").attr('disabled', 'disabled')
+            }
+            if ( selectValue != 1 && selectValue != 6) {
+                $("#rangeMin").removeAttr('disabled')
+                $("#rangeMax").removeAttr('disabled')
+            }
+        });
+    });
+</script>
+</body>
+</html>

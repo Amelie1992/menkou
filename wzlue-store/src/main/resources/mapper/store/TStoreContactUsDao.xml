@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.store.dao.TStoreContactUsDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.store.entity.TStoreContactUsEntity" id="tStoreContactUsMap">
+        <result property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="phone" column="phone"/>
+        <result property="email" column="email"/>
+        <result property="address" column="address"/>
+        <result property="appId" column="app_id"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+        <result property="delFlag" column="del_flag"/>
+    </resultMap>
+
+	<select id="queryListByParam" resultMap="tStoreContactUsMap">
+		SELECT
+		a.*,
+		b.id As w_id,
+		b.name As w_name
+		FROM t_store_contact_us a
+		left join wx_app b on a.app_id = b.id AND b.del_flag = 0
+		<where>
+			<if test="appname != null and appname.trim() != ''">
+				AND b.name like CONCAT('%',#{appname},'%')
+			</if>
+			<if test="appId != null and appId.trim() != ''">
+				AND b.id = #{appId}
+			</if>
+		</where>
+		<choose>
+			<when test="sidx != null and sidx.trim() != ''">
+				ORDER BY ${sidx} ${order}
+			</when>
+			<otherwise>
+				ORDER BY id desc
+			</otherwise>
+		</choose>
+		<if test="offset != null and limit != null">
+			LIMIT #{offset}, #{limit}
+		</if>
+	</select>
+
+	<select id="queryTotalByParam" resultType="int">
+		SELECT
+		count(1)
+		FROM t_store_contact_us a
+		left join wx_app b on a.app_id = b.id AND b.del_flag = 0
+		<where>
+			<if test="appname != null and appname.trim() != ''">
+				AND b.name like CONCAT('%',#{appname},'%')
+			</if>
+			<if test="appId != null and appId.trim() != ''">
+				AND b.id = #{appId}
+			</if>
+		</where>
+	</select>
+
+	<select id="queryObject" resultType="com.wzlue.store.entity.TStoreContactUsEntity">
+		SELECT * FROM t_store_contact_us WHERE id = #{value}
+	</select>
+
+	<select id="queryList" resultType="com.wzlue.store.entity.TStoreContactUsEntity">
+		SELECT * FROM t_store_contact_us
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+			<otherwise>
+                ORDER BY id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			LIMIT #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		SELECT count(*) FROM t_store_contact_us
+	</select>
+	 
+	<insert id="save" parameterType="com.wzlue.store.entity.TStoreContactUsEntity" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_store_contact_us
+		(
+			`title`,
+			`content`,
+			`phone`,
+			`email`,
+			`address`,
+			`app_id`,
+			`create_id`,
+			`create_date`,
+			`update_id`,
+			`update_date`,
+			`del_flag`
+									)
+		VALUES
+		(
+			#{title},
+			#{content},
+			#{phone},
+			#{email},
+			#{address},
+			#{appId},
+			#{createId},
+			now(),
+			#{updateId},
+			#{updateDate},
+			#{delFlag}
+									)
+	</insert>
+	 
+	<update id="update" parameterType="com.wzlue.store.entity.TStoreContactUsEntity">
+		UPDATE t_store_contact_us
+		<set>
+			<if test="title != null">`title` = #{title}, </if>
+			<if test="content != null">`content` = #{content}, </if>
+			<if test="phone != null">`phone` = #{phone}, </if>
+			<if test="email != null">`email` = #{email}, </if>
+			<if test="address != null">`address` = #{address}, </if>
+			<if test="appId != null">`app_id` = #{appId}, </if>
+			<if test="createId != null">`create_id` = #{createId}, </if>
+			<if test="createDate != null">`create_date` = #{createDate}, </if>
+			<if test="updateId != null">`update_id` = #{updateId}, </if>
+			<if test="updateDate != null">`update_date` = #{updateDate}, </if>
+			<if test="delFlag != null">`del_flag` = #{delFlag}</if>
+		</set>
+		WHERE id = #{id}
+	</update>
+	
+	<delete id="delete">
+		DELETE FROM t_store_contact_us WHERE id = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		DELETE FROM t_store_contact_us WHERE id IN
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

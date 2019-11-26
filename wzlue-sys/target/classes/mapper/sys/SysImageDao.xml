@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.sys.dao.SysImageDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.sys.entity.SysImageEntity" id="sysImageMap">
+        <result property="id" column="id"/>
+        <result property="picName" column="pic_name"/>
+        <result property="picUrl" column="pic_url"/>
+        <result property="picType" column="pic_type"/>
+        <result property="type" column="type"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createDate" column="create_date"/>
+        <result property="sort" column="sort"/>
+        <result property="code" column="code"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.sys.entity.SysImageEntity">
+		SELECT * FROM sys_image WHERE id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.sys.entity.SysImageEntity">
+        SELECT * FROM sys_image
+        <where>
+            1=1
+            <if test="type!=null and type!=''">
+                and `type` = #{type}
+            </if>
+            <if test="code!=null and code!=''">
+                and `code` = #{code}
+            </if>
+            <if test="remark!=null and remark!=''">
+                and `remark` = #{remark}
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+		SELECT count(*) FROM sys_image
+	</select>
+
+    <insert id="save" parameterType="com.wzlue.sys.entity.SysImageEntity" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO sys_image
+		(
+            `pic_name`,
+            `pic_url`,
+            `pic_type`,
+            `type`,
+            `remark`,
+            `create_by`,
+            `create_date`,
+            `sort`,
+            `code`
+									)
+		VALUES
+		(
+            #{picName},
+            #{picUrl},
+            #{picType},
+            #{type},
+            #{remark},
+            #{createBy},
+            now(),
+            #{sort},
+            #{code}
+									)
+	</insert>
+
+    <insert id="saveBatch" parameterType="java.util.List">
+        INSERT INTO sys_image
+        (
+        `pic_name`,
+        `pic_url`,
+        `pic_type`,
+        `type`,
+        `remark`,
+        `create_by`,
+        `create_date`,
+        `sort`,
+        `code`
+        )
+        VALUES
+        <foreach item="item" collection="list" separator=",">
+            (
+            #{item.picName},
+            #{item.picUrl},
+            #{item.picType},
+            #{item.type},
+            #{item.remark},
+            #{item.createBy},
+            now(),
+            #{item.sort},
+            #{item.code}
+            )
+        </foreach>
+    </insert>
+
+    <update id="update" parameterType="com.wzlue.sys.entity.SysImageEntity">
+        UPDATE sys_image
+        <set>
+            <if test="picName != null">`pic_name` = #{picName},</if>
+            <if test="picUrl != null">`pic_url` = #{picUrl},</if>
+            <if test="picType != null">`pic_type` = #{picType},</if>
+            <if test="type != null">`type` = #{type},</if>
+            <if test="remark != null">`remark` = #{remark},</if>
+            <if test="createBy != null">`create_by` = #{createBy},</if>
+            <if test="createDate != null">`create_date` = #{createDate},</if>
+            <if test="sort != null">`sort` = #{sort},</if>
+            <if test="code != null">`code` = #{code}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM sys_image WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM sys_image WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="deleteByTypeAndCode">
+		DELETE FROM sys_image WHERE `type` = #{type} AND code = #{code}
+	</delete>
+
+    <delete id="deleteByTypeAndRemark">
+		DELETE FROM sys_image WHERE `type` = #{type} AND remark = #{remark}
+	</delete>
+</mapper>

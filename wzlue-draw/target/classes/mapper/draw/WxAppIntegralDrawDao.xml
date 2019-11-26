@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.draw.dao.WxAppIntegralDrawDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.draw.entity.WxAppIntegralDrawEntity" id="wxAppIntegralDrawMap">
+        <result property="appId" column="app_id"/>
+        <result property="consume" column="consume"/>
+        <result property="state" column="state"/>
+        <result property="remarks" column="remarks"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="updateBy" column="update_by"/>
+        <collection property="prizeList" ofType="com.wzlue.draw.entity.IntegralDrawPrizeEntity"
+                    column="app_id" select="com.wzlue.draw.dao.IntegralDrawPrizeDao.queryByAppId"
+                    autoMapping="true"/>
+
+    </resultMap>
+
+    <select id="queryObject" resultMap="wxAppIntegralDrawMap">
+		SELECT * FROM wx_app_integral_draw WHERE app_id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.draw.entity.WxAppIntegralDrawEntity">
+        SELECT * FROM wx_app_integral_draw
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY app_id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+		SELECT count(*) FROM wx_app_integral_draw
+	</select>
+
+    <insert id="save" parameterType="com.wzlue.draw.entity.WxAppIntegralDrawEntity">
+		INSERT INTO wx_app_integral_draw
+		(
+													`app_id`, 
+																	`consume`, 
+																	`state`, 
+																	`remarks`, 
+																	`create_time`, 
+																	`update_time`, 
+																	`update_by`
+									)
+		VALUES
+		(
+													#{appId}, 
+																	#{consume}, 
+																	1,
+																	#{remarks}, 
+																	now(),
+																	#{updateTime}, 
+																	#{updateBy}
+									)
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.draw.entity.WxAppIntegralDrawEntity">
+        UPDATE wx_app_integral_draw
+        <set>
+            <if test="consume != null">`consume` = #{consume},</if>
+            <if test="state != null">`state` = #{state},</if>
+            <if test="remarks != null">`remarks` = #{remarks},</if>
+            <if test="createTime != null">`create_time` = #{createTime},</if>
+            <if test="updateTime != null">`update_time` = #{updateTime},</if>
+            <if test="updateBy != null">`update_by` = #{updateBy}</if>
+        </set>
+        WHERE app_id = #{appId}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM wx_app_integral_draw WHERE app_id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM wx_app_integral_draw WHERE app_id IN
+        <foreach item="appId" collection="array" open="(" separator="," close=")">
+            #{appId}
+        </foreach>
+    </delete>
+
+
+    <select id="queryAppList" resultType="com.wzlue.draw.entity.WxAppIntegralDrawEntity">
+        SELECT
+        a.id appId,
+        a.name appname,
+        b.state,
+        b.create_time
+        FROM wx_app a
+        left join wx_app_integral_draw b on a.id = b.app_id
+        <where>
+            1=1
+            <if test="appId!=null and appId!=''">
+                and a.id = #{appId}
+            </if>
+            <if test="state!=null and state!='' and state!=-1">
+                and b.state = #{state}
+            </if>
+            <if test="state!=null and state!='' and state==-1">
+                and b.state is null
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY create_date desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryAppTotal" resultType="int">
+        SELECT count(*) FROM wx_app a
+        left join wx_app_integral_draw b on a.id = b.app_id
+        <where>
+            1=1
+            <if test="appId!=null and appId!=''">
+                and a.id = #{appId}
+            </if>
+            <if test="state!=null and state!='' and state!=-1">
+                and b.state = #{state}
+            </if>
+            <if test="state!=null and state!='' and state==-1">
+                and b.state is null
+            </if>
+        </where>
+    </select>
+
+</mapper>

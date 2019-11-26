@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>二维码</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/AdminLTE.min.css">
+    <link rel="stylesheet" href="../../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+    <link rel="stylesheet" href="../../css/bootstrap-table.min.css">
+    <link rel="stylesheet" href="../../plugins/bootstrap-validator/css/bootstrap-validator.min.css">
+    <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../plugins/treegrid/jquery.treegrid.css">
+    <!--日期时间插件-->
+    <link rel="stylesheet" href="../../plugins/datetimepicker/css/bootstrap-datetimepicker.min.css">
+    <!--可搜索下拉css-->
+    <link href="../../plugins/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet"/>
+
+    <style>
+        select {
+            -webkit-appearance: none;
+            -webkit-tap-highlight-color: #fff;
+            outline: 0;
+        }
+    </style>
+
+</head>
+<body>
+
+<div id="rrapp" v-cloak class="content-wrapper wzl-content-wrapper">
+    <section class="content-header">
+        <h1>
+            二维码 &nbsp;<small v-if="title!=''">{{title}}</small>
+            <input v-show="showList2 || showList3 || showList4" style="float: right" type="button" class="btn btn-warning"
+                   @click="showTableList" value="返回"/>
+        </h1>
+    </section>
+    <div v-show="showList">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <div class="box-header with-border">
+                            <div class="col-xs-2" v-if="user_Store == 0">
+                                <select id="appIdParam" class=" form-control selectpicker"
+                                        data-live-search="true"></select>
+                            </div>
+                            <button class="btn btn-primary" @click="query"><i class="fa fa-search"></i>&nbsp;{{user_Store
+                                == 0 ? '查询' : '刷新'}}
+                            </button>
+                            <button class="btn btn-adn" @click="apply"><i class="fa fa-plus"></i>&nbsp;申请二维码</button>
+                            <!--<button v-if="hasPermission('draw:wxappintegraldraw:save')" class="btn btn-success"
+                                    @click="add">
+                                <i class="fa fa-plus"></i>&nbsp;新增
+                            </button>
+                            <button v-if="hasPermission('draw:wxappintegraldraw:update')" class="btn btn-warning"
+                                    @click="update">
+                                <i class="fa fa-trash-o"></i>&nbsp;定制
+                            </button>
+                           <button v-if="hasPermission('store:wxappjobtype:delete')" class="btn btn-danger"
+                                    @click="del">
+                                <i class="fa fa-trash-o"></i>&nbsp;删除
+                            </button>
+                            <button v-if="user_Store == 0" class="btn btn-warning" @click="open">
+                                <i class="fa fa-plus"></i>&nbsp;开通
+                            </button>
+                            <button v-if="user_Store == 0" class="btn btn-success" @click="enable">
+                                <i class="fa fa-edit"></i>&nbsp;启用
+                            </button>
+                                <button v-if="user_Store == 0" class="btn btn-danger" @click="forbid">
+                                <i class="fa fa-edit"></i>&nbsp;禁用
+                            </button>-->
+                        </div>
+                        <div class="box-body">
+                            <div class="table-responsive">
+                                <table id="table"></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!--二级列表 二维码记录-->
+    <div v-show="showList2">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <div class="box-header with-border">
+                            <button class="btn btn-primary" @click="query2"><i class="fa fa-search"></i>&nbsp;查询
+                            </button>
+                            <button v-if="user_Store == 0" class="btn btn-success" @click="generate">
+                                <i class="fa fa-plus"></i>&nbsp;生成二维码
+                            </button>
+                            <button v-if="user_Store == 0" class="btn btn-danger" @click="del">
+                                <i class="fa fa-trash-o"></i>&nbsp;删除
+                            </button>
+                        </div>
+                        <div class="box-body">
+                            <div class="table-responsive">
+                                <table id="table2"></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!--二级列表 二维码详情-->
+    <div v-show="codeDetailPage">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <form class="form-horizontal">
+                            <br><br>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">推广二维码</div>
+                                    <div class="col-sm-3">
+                                        <img width="200px" height="200px" alt="推广二维码" :src="wxAppQrCode.url"
+                                             onclick="window.open(this.src,'_blank')">
+                                    </div>
+                                </div>
+                            </div>
+                            <br>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">推广大使</div>
+                                    <div class="col-sm-3">
+                                        <input type="text" name="name" class="form-control"
+                                               v-model="wxAppQrCode.name" placeholder="推广人员姓名"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <br>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">手机号</div>
+                                    <div class="col-sm-3">
+                                        <input type="text" name="phone" class="form-control"
+                                               v-model="wxAppQrCode.phone" placeholder="推广人员手机号"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <br>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label">备注</div>
+                                    <div class="col-sm-3">
+                                        <textarea name="remarks" class="form-control" rows="3"
+                                                  v-model="wxAppQrCode.remarks" placeholder="备注"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <br>
+                            <!--<div class="row">-->
+                            <!--<div class="form-group required">-->
+                            <!--<div class="col-sm-2 control-label">公众号名称</div>-->
+                            <!--<div class="col-sm-3">-->
+                            <!--<select class="form-control" id="appId" name="appId"-->
+                            <!--v-model="wxAppQrCode.appId" disabled>-->
+                            <!--<option :value="item.id" v-for="item in categoryList">{{item.name}}</option>-->
+                            <!--</select>-->
+                            <!--</div>-->
+                            <!--</div>-->
+                            <!--</div>-->
+                            <br>
+
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-sm-2 control-label"></div>
+                                    <input type="button" class="btn btn-primary" @click="validate" value="确定"/>
+                                    &nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="showTableList"
+                                                       value="返回"/>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!--三级列表 吸粉记录-->
+    <div v-show="showList3">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <div class="box-header with-border">
+                            <div class="col-xs-2">
+                                <input type="text" class="form-control" v-model="params3.nickName" @keyup.enter="query3"
+                                       placeholder="昵称" maxlength="30"/>
+                            </div>
+                            <div class="col-xs-2">
+                                <input type="text" class="form-control " id="createTime"
+                                       v-model="params3.createTime" placeholder="年月"/>
+                            </div>
+                            <button class="btn btn-primary" @click="query3"><i class="fa fa-search"></i>&nbsp;查询</button>
+                            <button class="btn btn-adn" @click="exportExcel()"><i class="fa fa-download"></i>&nbsp;导出</button>
+
+                        </div>
+
+                        <div class="box-body">
+                            <div class="table-responsive">
+                                <table id="table3"></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!--四级列表 报名记录-->
+    <div v-show="showList4">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <div class="box-header with-border">
+                            <div class="col-xs-1">
+                                <select class="form-control" data-width="auto" v-model="params4.type">
+                                    <option value="">报名类型</option>
+                                    <option value="1">主动报名</option>
+                                    <option value="2">招聘报名</option>
+                                </select>
+                            </div>
+                            <div class="col-xs-1">
+                                <select class="form-control" data-width="auto" v-model="params4.stateFeedback">
+                                    <option value="">状态</option>
+                                    <option value="1">已报名</option>
+                                    <option value="2">已面试</option>
+                                    <option value="3">未录用</option>
+                                    <option value="4">已入职</option>
+                                    <option value="5">已离职</option>
+                                    <option value="6">其他</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" @click="query4"><i class="fa fa-search"></i>&nbsp;查询</button>
+                        </div>
+                        <div class="box-body">
+                            <div class="table-responsive">
+                                <table id="table4"></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+
+</div>
+
+<script src="../../libs/jquery.min.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../libs/bootstrap.min.js"></script>
+<script src="../../libs/vue.min.js"></script>
+<!--bootstrap-table-->
+<script src="../../plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="../../plugins/bootstrap-table/locale/bootstrap-table-zh-CN.js"></script>
+<!--bootstrap-validator-->
+<script src="../../plugins/bootstrap-validator/js/bootstrap-validator.min.js"></script>
+<script src="../../plugins/bootstrap-validator/js/zh_CN.min.js"></script>
+<script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+<script src="../../js/common.js"></script>
+<!--日期时间-->
+<script src="../../plugins/datetimepicker/js/bootstrap-datetimepicker.js"></script>
+<script src="../../plugins/datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js"></script>
+<!--可搜索下拉js-->
+<script src="../../plugins/bootstrap-select/js/bootstrap-select.min.js"></script>
+<script src="../../plugins/bootstrap-select/js/i18n/defaults-zh_CN.min.js"></script>
+
+<!--导出js-->
+<script src="../../plugins/blockUI/jquery.blockUI.js"></script>
+<script src="../../js/wzlue.js"></script>
+
+<script src="../../js/modules/store/qrcode.js"></script>
+
+
+<script type="text/javascript">
+
+    $('#createTime').datetimepicker({
+        language: 'zh-CN',
+        format: 'yyyymm',
+        weekStart: 1,
+        autoclose: true,
+        startView: 3,
+        minView: 3,
+        forceParse: false
+
+    });
+
+
+    $(function () {
+        /* $(".selectpicker").selectpicker({
+             noneSelectedText: '请选择'
+         });*/
+        $(window).on('load', function () {
+            $('.selectpicker').selectpicker('val', '');
+            $('.selectpicker').selectpicker('refresh');
+        });
+
+        //下拉数据加载
+        $.ajax({
+            type: 'get',
+            url: baseURL + "wechat/wxapp/selectAll",
+            dataType: 'json',
+            success: function (datas) {//返回list数据并循环获取
+                var wxlist = datas.wxAppList;
+                var select = $("#appIdParam");
+                select.append("<option value=''>全部门店</option>");
+                for (var i = 0; i < wxlist.length; i++) {
+                    select.append("<option value='" + wxlist[i].id + "'>" + wxlist[i].name + "</option>");
+                }
+                $('.selectpicker').selectpicker('val', '');
+                $('.selectpicker').selectpicker('refresh');
+            }
+        });
+
+        $("#appIdParam").change('shown.bs.select', function (e) {
+            vm.queryParams.appId = $("#appIdParam").val();
+        })
+    });
+</script>
+</body>
+</html>

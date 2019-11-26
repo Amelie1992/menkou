@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.doorway.dao.TDoorwayAboutUsDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.doorway.entity.TDoorwayAboutUsEntity" id="tDoorwayAboutUsMap">
+        <result property="id" column="id"/>
+        <result property="profile" column="profile"/>
+        <result property="appId" column="app_id"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+        <result property="delFlag" column="del_flag"/>
+		<result property="wname" column="w_name"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.doorway.entity.TDoorwayAboutUsEntity">
+		SELECT * FROM t_doorway_about_us WHERE id = #{value}
+	</select>
+
+	<select id="queryList" resultType="com.wzlue.doorway.entity.TDoorwayAboutUsEntity">
+		SELECT a.* FROM t_doorway_about_us a
+        left join wx_app b on a.app_id = b.id AND b.del_flag = 0
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+			<otherwise>
+                ORDER BY id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			LIMIT #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		SELECT count(*) FROM t_doorway_about_us
+	</select>
+	 
+	<insert id="save" parameterType="com.wzlue.doorway.entity.TDoorwayAboutUsEntity">
+		INSERT INTO t_doorway_about_us
+		(
+                `id`,
+                `profile`,
+                `app_id`,
+                `create_id`,
+                `create_date`,
+                `update_id`,
+                `update_date`,
+                `del_flag`
+									)
+		VALUES
+		(
+                #{id},
+                #{profile},
+                #{appId},
+                #{createId},
+                now(),
+                #{updateId},
+                #{updateDate},
+                #{delFlag}
+									)
+	</insert>
+	 
+	<update id="update" parameterType="com.wzlue.doorway.entity.TDoorwayAboutUsEntity">
+		UPDATE t_doorway_about_us
+		<set>
+            <if test="profile != null">`profile` = #{profile}, </if>
+            <if test="appId != null">`app_id` = #{appId}, </if>
+            <if test="createId != null">`create_id` = #{createId}, </if>
+            <if test="createDate != null">`create_date` = #{createDate}, </if>
+            <if test="updateId != null">`update_id` = #{updateId}, </if>
+            <if test="updateDate != null">`update_date` = #{updateDate}, </if>
+            <if test="delFlag != null">`del_flag` = #{delFlag}</if>
+		</set>
+		WHERE id = #{id}
+	</update>
+	
+	<delete id="delete">
+		DELETE FROM t_doorway_about_us WHERE id = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		DELETE FROM t_doorway_about_us WHERE id IN
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

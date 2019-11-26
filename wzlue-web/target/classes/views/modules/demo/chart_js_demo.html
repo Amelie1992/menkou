@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>ChartJsDemo</title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="libs/jquery.min.js"></script>
+    <script src="plugins/chartjs/Chart.min.js"></script>
+
+</head>
+<body>
+<div class="panel panel-default">
+    <section class="content-header">
+        <h1>ChartJs</h1>
+    </section>
+
+    <section class="content">
+        <div class="row">
+            <div class="col-xs-12">
+                <canvas id="lineChart" style="height:250px"></canvas>
+            </div>
+        </div>
+    </section>
+</div>
+</body>
+
+<script type="text/javascript">
+    var areaChartData = {
+        labels: ["January", "February", "March", "April", "May", "June", "July"],
+        datasets: [
+            {
+                label: "Digital Goods",
+                data: [28, 48, 40, 19, 86, 27, 90]
+            }
+        ]
+    };
+
+    var areaChartOptions = {
+        //Boolean - whether to make the chart responsive to window resizing
+        responsive: true,
+        lineTension: 0,
+        bezierCurve: false
+    };
+
+    //-------------
+    //- LINE CHART -
+    //--------------
+
+    $(function(){
+        var lineChartCanvas = $("#lineChart").get(0).getContext("2d");
+        var lineChart = new Chart(lineChartCanvas);
+        var lineChartOptions = areaChartOptions;
+        lineChartOptions.datasetFill = false;
+        lineChart.Line(areaChartData, lineChartOptions);
+    })
+
+
+</script>
+</html>

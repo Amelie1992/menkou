@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.doorway.dao.TDoorwayTelephoneDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.doorway.entity.TDoorwayTelephoneEntity" id="tDoorwayTelephoneMap">
+        <result property="id" column="id"/>
+        <result property="telephone" column="telephone"/>
+        <result property="appId" column="app_id"/>
+        <result property="createId" column="create_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateDate" column="update_date"/>
+        <result property="wname" column="w_name"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.doorway.entity.TDoorwayTelephoneEntity">
+		SELECT * FROM t_doorway_telephone WHERE id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.doorway.entity.TDoorwayTelephoneEntity">
+        SELECT
+        a.id,
+        a.telephone,
+        a.app_id,
+        a.create_id,
+        a.create_date,
+        a.update_id,
+        a.update_date,
+        b.name wname
+
+        FROM t_doorway_telephone a
+        left join wx_app b on a.app_id = b.id AND b.del_flag = 0
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+		SELECT count(*) FROM t_doorway_telephone
+
+	</select>
+
+
+
+
+    <select id="queryListByParam" resultMap="tDoorwayTelephoneMap">
+        SELECT
+        a.id,
+        a.telephone,
+        a.app_id,
+        a.create_id,
+        a.create_date,
+        a.update_id,
+        a.update_date
+
+
+        FROM t_doorway_telephone a
+
+
+
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotalByParam" resultType="int">
+
+        SELECT
+        count(*)
+
+        FROM t_doorway_telephone a
+
+    </select>
+
+
+
+
+    <insert id="save" parameterType="com.wzlue.doorway.entity.TDoorwayTelephoneEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO t_doorway_telephone
+		(
+																				`telephone`, 
+																	`app_id`, 
+																	`create_id`, 
+																	`create_date`, 
+																	`update_id`, 
+																	`update_date`
+									)
+		VALUES
+		(
+																				#{telephone}, 
+																	#{appId}, 
+																	#{createId}, 
+																	#{createDate}, 
+																	#{updateId}, 
+																	#{updateDate}
+									)
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.doorway.entity.TDoorwayTelephoneEntity">
+        UPDATE t_doorway_telephone
+        <set>
+            <if test="telephone != null">`telephone` = #{telephone},</if>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="createId != null">`create_id` = #{createId},</if>
+            <if test="createDate != null">`create_date` = #{createDate},</if>
+            <if test="updateId != null">`update_id` = #{updateId},</if>
+            <if test="updateDate != null">`update_date` = #{updateDate}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+		DELETE FROM t_doorway_telephone WHERE id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        DELETE FROM t_doorway_telephone WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

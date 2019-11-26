@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzlue.qrcode.dao.WxAppQrCodeDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.wzlue.qrcode.entity.WxAppQrCodeEntity" id="wxAppQrCodeMap">
+        <result property="id" column="id"/>
+        <result property="appId" column="app_id"/>
+        <result property="sceneId" column="scene_id"/>
+        <result property="qrCode" column="qr_code"/>
+        <result property="ticket" column="ticket"/>
+        <result property="url" column="url"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="name" column="name"/>
+        <result property="phone" column="phone"/>
+        <result property="remarks" column="remarks"/>
+        <result property="delFlag" column="del_flag"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.wzlue.qrcode.entity.WxAppQrCodeEntity">
+		SELECT * FROM wx_app_qr_code WHERE id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.wzlue.qrcode.entity.WxAppQrCodeEntity">
+        SELECT
+        a.* ,
+        b.name appname
+        FROM wx_app_qr_code a
+        left join wx_app b on a.app_id=b.id
+        <where>
+            1=1
+            <if test="appId!=null and appId!=''">
+                and a.app_id = #{appId}
+            </if>
+            <if test="delFlag!=null and delFlag!=''">
+                and a.del_flag = #{delFlag}
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY id asc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        SELECT count(*) FROM wx_app_qr_code
+        <where>
+            1=1
+            <if test="appId!=null and appId!=''">
+                and app_id = #{appId}
+            </if>
+            <if test="delFlag!=null and delFlag!=''">
+                and del_flag = #{delFlag}
+            </if>
+        </where>
+    </select>
+
+    <insert id="save" parameterType="com.wzlue.qrcode.entity.WxAppQrCodeEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO wx_app_qr_code
+		(
+																				`app_id`, 
+																	`scene_id`, 
+																	`qr_code`,
+																	`ticket`,
+																	`url`,
+																	`create_by`, 
+																	`create_time`, 
+																	`update_by`, 
+																	`update_time`, 
+																	`name`, 
+																	`phone`, 
+																	`remarks`,
+																	`del_flag`
+									)
+		VALUES
+		(
+																				#{appId}, 
+																	#{sceneId}, 
+																	#{qrCode},
+																	#{ticket},
+																	#{url},
+																	#{createBy}, 
+																	now(),
+																	#{updateBy}, 
+																	#{updateTime}, 
+																	#{name}, 
+																	#{phone}, 
+																	#{remarks},
+																	1
+									)
+	</insert>
+
+    <update id="update" parameterType="com.wzlue.qrcode.entity.WxAppQrCodeEntity">
+        UPDATE wx_app_qr_code
+        <set>
+            <if test="updateBy != null">`update_by` = #{updateBy},</if>
+            <if test="updateTime != null">`update_time` = #{updateTime},</if>
+            <if test="name != null">`name` = #{name},</if>
+            <if test="phone != null">`phone` = #{phone},</if>
+            <if test="remarks != null">`remarks` = #{remarks}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+    <!--
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="sceneId != null">`scene_id` = #{sceneId},</if>
+            <if test="qrCode != null">`qr_code` = #{qrCode},</if>
+            <if test="createBy != null">`create_by` = #{createBy},</if>
+            <if test="createTime != null">`create_time` = #{createTime},</if>
+    -->
+
+    <delete id="delete">
+		DELETE FROM wx_app_qr_code WHERE id = #{value}
+	</delete>
+
+    <!--<delete id="deleteBatch">
+        DELETE FROM wx_app_qr_code WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>-->
+
+    <update id="deleteBatch">
+        UPDATE wx_app_qr_code SET del_flag = 2 WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+
+    <select id="queryAppList" resultType="com.wzlue.qrcode.entity.WxAppQrCodeEntity">
+        SELECT
+        DISTINCT a.id appId,
+        a.name appname,
+        (select count(*) from wx_app_qr_code b where a.id = b.app_id  and b.del_flag = 1) `count`
+        FROM wx_app a
+        left join wx_app_qr_code b on a.id = b.app_id
+        <where>
+            1=1
+            <if test="appId!=null and appId!=''">
+                and a.id = #{appId}
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                ORDER BY ${sidx} ${order}
+            </when>
+            <otherwise>
+                ORDER BY create_date desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryAppTotal" resultType="int">
+        SELECT count(*) FROM wx_app
+        <where>
+            1=1
+            <if test="appId!=null and appId!=''">
+                and id = #{appId}
+            </if>
+        </where>
+    </select>
+
+</mapper>
